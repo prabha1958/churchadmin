@@ -59,6 +59,7 @@ function Sidebar() {
             <Link href="/dashboard" className=' text-2xl text-blue-50 justify-items-start'>Dashboard</Link>
             <Link href="/dashboard/messages" className=' text-2xl text-blue-50 justify-items-start'>Messages</Link>
             <Link href="/dashboard/members" className=' text-2xl text-blue-50 justify-items-start'>Members</Link>
+            <Link href="/dashboard/changes" className=' text-2xl text-blue-50 justify-items-start'>Change Requests</Link>
             <Link href="/dashboard/subscriptions" className=' text-2xl text-blue-50'>Subscriptions</Link>
             <Link href="/dashboard/alliances" className=' text-2xl text-blue-50'>Alliances</Link>
             <Link href="/dashboard/clergy" className=' text-2xl text-blue-50'>Clergy</Link>
@@ -67,7 +68,7 @@ function Sidebar() {
             <Link href="/dashboard/anniversaries" className=' text-2xl text-blue-50'>Anniversaries</Link>
             <Link href="/dashboard/poor-feeding" className=' text-2xl text-blue-50'>Poorfeeding</Link>
             <Link href="/dashboard/men-fellowships" className=' text-2xl text-blue-50'>MensFellowships</Link>
-            <Link href="/dashboard/women-fellowships" className=' text-2xl text-blue-50'>WomensFellowships</Link>
+            <Link href="/dashboard/women-fellowship" className=' text-2xl text-blue-50'>WomensFellowships</Link>
             <button onClick={handleLogoutClick} className="bg-amber-500 p-2 rounded-2xl text-blue-50 text-[20px] cursor-pointer mt-6">Logout</button>
         </div>
     )

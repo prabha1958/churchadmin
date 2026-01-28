@@ -39,7 +39,7 @@ export default function RootLayout({
                 </div>
 
                 {/* Content */}
-                <div className="ml-[15%] w-[85%] bg-blue-50 mt-30">
+                <div className="ml-[15%] w-[85%] bg-blue-50 mt-30 min-h-screen">
                     <div className="w-full px-1">
                         {children}
                     </div>
