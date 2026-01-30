@@ -515,7 +515,7 @@ export default function PastrsPage() {
                                     <Input
                                         placeholder="Name *"
                                         value={editForm.name || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })}
+                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                                     />
                                 </div>
                                 <div className="flex flex-col space-y-0.5 w-full">
