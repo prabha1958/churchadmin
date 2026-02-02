@@ -744,10 +744,13 @@ export default function AlliancePage() {
                     <DialogHeader>
                         <DialogTitle>Add Alliance</DialogTitle>
                     </DialogHeader>
-
+                    {/* BLUR + LOADING OVERLAY */}
                     {isCreating && (
-                        <div className="absolute inset-0 bg-black/40 z-50 flex items-center justify-center text-white text-lg">
-                            Creating alliance…
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                            <div className="text-center">
+                                <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
+                                <p className="text-sm">Creating alliance…</p>
+                            </div>
                         </div>
                     )}
 
