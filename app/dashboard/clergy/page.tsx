@@ -197,26 +197,21 @@ export default function PastrsPage() {
         Object.entries(editForm).forEach(([key, val]) => {
             if (val === null || val === undefined) return;
 
-            // files
+            // ✅ 1. FILES: send ONLY if user selected a new file
             if (val instanceof File) {
                 formData.append(key, val);
                 return;
             }
 
-            // skip readonly fields
-            if (["id", "created_at", "updated_at"].includes(key)) return;
+            // ❌ 2. DO NOT send existing image paths
+            if (
+                key === "photo"
 
-
-
-            if (val instanceof File) {
-                formData.append(key, val);
-            } else if (typeof val === "string" || typeof val === "number") {
-                // DO NOT send existing photo path as profile_photo
-                if (key === "photo") return;
-                formData.append(key, String(val));
+            ) {
+                return;
             }
 
-            // always send strings/numbers
+            // ✅ 3. Normal scalar values
             formData.append(key, String(val));
         });
 
