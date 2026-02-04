@@ -29,7 +29,7 @@ interface PastorateComMember {
     date_of_birth: string;
     dt_from: string;
     dt_to: string;
-    status: string;
+    status: "in" | "out";
     designation: string;
     profile_photo: string;
     achievements: string;
@@ -458,6 +458,7 @@ export default function PastrsPage() {
                                     />
                                 </div>
 
+
                             </div>
                             <Button type="submit" className="bg-blue-600 text-blue-50">
                                 Create Pastorate Comm Member
@@ -596,6 +597,24 @@ export default function PastrsPage() {
                                         value={editForm.achievements || ""}
                                         onChange={(e) => setEditForm({ ...editForm, achievements: e.target.value })}
                                     />
+                                </div>
+                                <div>
+                                    <Label>Status</Label>
+                                    <select
+                                        value={editForm.status}
+                                        onChange={(e) =>
+                                            setEditForm({ ...editForm, status: e.target.value })
+                                        }
+                                    >
+
+                                        <option value="in">in</option>
+                                        <option value="out">out</option>
+
+
+                                    </select>
+
+
+
                                 </div>
 
 

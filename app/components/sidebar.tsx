@@ -64,7 +64,7 @@ function Sidebar() {
             <Link href="/dashboard/alliances" className=' text-2xl text-blue-50'>Alliances</Link>
             <Link href="/dashboard/clergy" className=' text-2xl text-blue-50'>Clergy</Link>
             <Link href="/dashboard/committee" className=' text-2xl text-blue-50'>Committee Members</Link>
-            <Link href="/dashboard/anniversaries" className=' text-2xl text-blue-50'>Anniversaries</Link>
+            <Link href="/dashboard/events" className=' text-2xl text-blue-50'>Events</Link>
             <Link href="/dashboard/poor-feeding" className=' text-2xl text-blue-50'>Poorfeeding</Link>
             <Link href="/dashboard/men-fellowships" className=' text-2xl text-blue-50'>MensFellowships</Link>
             <Link href="/dashboard/women-fellowship" className=' text-2xl text-blue-50'>WomensFellowships</Link>

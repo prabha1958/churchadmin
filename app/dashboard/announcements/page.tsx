@@ -94,7 +94,7 @@ export default function PastrsPage() {
             });
 
             const json = await res.json();
-            console.log(json)
+
             setAnnouncements(Array.isArray(json.data?.data) ? json.data.data : []);
 
 
