@@ -442,8 +442,8 @@ export default function EventsPage() {
                             <td className="w-96"><Textarea value={ev.description} /> </td>
                             <td className="pl-2">{ev.event_photos.length}</td>
                             <td>{ev.published
-                                ? <button onClick={() => handlHideSubmit(ev.id)} className="bg-red-400 text-amber-950 font-bold my-1 px-2 py-1 rounded-xl">Hide</button>
-                                : <button onClick={() => handleShowSubmit(ev.id)} className="bg-green-400 text-amber-950 font-bold my-1 px-2 py-1 rounded-xl">Show</button>
+                                ? <button onClick={() => handlHideSubmit(ev.id)} className="bg-green-600 text-amber-50 font-bold my-1 px-2 py-1 rounded-xl">Hide</button>
+                                : <button onClick={() => handleShowSubmit(ev.id)} className="bg-red-600 text-amber-50 font-bold my-1 px-2 py-1 rounded-xl">Show</button>
                             }
 
 
