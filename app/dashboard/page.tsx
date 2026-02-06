@@ -172,7 +172,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <StatCard title="Members" number={''} value={dashboard?.members.total?.toString() ?? "—"} subtitle="Active members" style="bg-blue-800 border-amber-100" />
                 <StatCard title="Subscriptions" value={dashboard?.subscriptions.total?.toString() ?? "-"} number={dashboard?.subscriptions.amount?.toString() ?? "-"} subtitle="Collected this FY" style="bg-[#b35c05] border-[#07ed9d]" />
-                <StatCard title="Alliances" number={""} value={dashboard?.alliances.published.toString() ?? "-"} subtitle="Published profiles" style="bg-[#5b07ed] border-[#ed2607]" />
+                <StatCard title="Alliances" number={""} value={dashboard?.alliances.published?.toString() ?? "-"} subtitle="Published profiles" style="bg-[#5b07ed] border-[#ed2607]" />
                 <StatCard title="Areas" number={""} value="14" subtitle="Church areas" style="bg-[#048206] border-[#ed4f0c]" />
             </div>
 
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <GreetingsCard
                     title="Birthday Greetings"
-                    lastRun={dashboard?.greetings.birthday_last_run.toString() ?? "-"}
+                    lastRun={dashboard?.greetings.birthday_last_run?.toString() ?? "-"}
                     command="send:birthday-wishes"
                     style="bg-[#056603] border-[#ede609]"
                     onRun={sendBdayGreetings}
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
 
                 <GreetingsCard
                     title="Anniversary Greetings"
-                    lastRun={dashboard?.greetings.anniversary_last_run.toString() ?? "-"}
+                    lastRun={dashboard?.greetings.anniversary_last_run?.toString() ?? "-"}
                     command="greetings:anniversary"
                     style="bg-[#270994] border-[#0af2d3]"
                     onRun={sendAnnGreetings}
