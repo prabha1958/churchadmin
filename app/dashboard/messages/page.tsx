@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 
 
+
 import { Spinner } from "@/components/ui/spinner"
 
 import { Button } from "@/components/ui/button";
@@ -267,6 +268,108 @@ export default function AdminMessagesPage() {
     };
 
 
+    const handlHideSubmit = async (id: any) => {
+
+        const confirmed = window.confirm(
+            "Are you sure you want to hide this event?\nThis will notify members."
+        );
+
+        if (!confirmed) return;
+        setIsCreating(true);
+        setSuccessMsg(null);
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${id}/hide`, {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+
+            });
+
+            const data = await res.json();
+            console.log(data)
+
+            if (!res.ok) {
+                alert(data.message || "Failed to update message");
+                setIsCreating(false);
+                return;
+            }
+
+            if (res.ok) {
+                // success
+                setSuccessMsg("Message updated successfully ✅");
+                loadMessages();
+
+                // auto close modal after short delay
+                setTimeout(() => {
+                    setAddModal(false);
+                    setSuccessMsg(null);
+                }, 1500);
+            } else {
+                alert(data.message || "Error updating member");
+            }
+        } catch (err) {
+            alert("Network error");
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+
+    const handleShowSubmit = async (id: any) => {
+
+        const confirmed = window.confirm(
+            "Are you sure you want to show this event?\nThis will notify members."
+        );
+
+        if (!confirmed) return;
+        setIsCreating(true);
+        setSuccessMsg(null);
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${id}/show`, {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.message || "Failed to update message");
+                setIsCreating(false);
+                return;
+            }
+
+            if (res.ok) {
+                // success
+                setSuccessMsg("Message updated successfully ✅");
+                loadMessages();
+
+                // auto close modal after short delay
+                setTimeout(() => {
+                    setAddModal(false);
+                    setSuccessMsg(null);
+                }, 1500);
+            } else {
+                alert(data.message || "Error updating member");
+            }
+        } catch (err) {
+            alert("Network error");
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+
+
+
+
 
 
 
@@ -280,7 +383,7 @@ export default function AdminMessagesPage() {
     return (
         <div className="p-6 bg-base-100">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-xl font-bold">Announcements</h1>
+                <h1 className="text-xl font-bold">Messages</h1>
                 <Button onClick={openAdd} >+ Create Message</Button>
             </div>
             <table className="table table-zebra w-full  text-center text-blue-900">
@@ -326,21 +429,12 @@ export default function AdminMessagesPage() {
                                 }
 
                             </td>
-                            <td>
-                                {isCreating &&
-                                    <Button type="submit" size="sm" className="bg-green-400 text-amber-950 font-bold my-1 ml-1">
-                                        <Spinner /> updating
-                                    </Button>
-                                }
-                                {!isCreating && !msg.published_at &&
-                                    <Button type="submit" onClick={() => handlSendSubmit(msg.id)} size="sm" className="bg-green-400 text-amber-950 font-bold my-1 ml-1">
-                                        Send
-                                    </Button>
-                                }
+                            <td>{msg.is_published
+                                ? <button onClick={() => handlHideSubmit(msg.id)} className="bg-green-600 text-amber-50 font-bold my-1 px-2 py-1 rounded-xl">Hide</button>
+                                : <button onClick={() => handleShowSubmit(msg.id)} className="bg-red-600 text-amber-50 font-bold my-1 px-2 py-1 rounded-xl">Show</button>
+                            }
 
-                                {!isCreating && msg.published_at &&
-                                    <p>Published</p>
-                                }
+
                             </td>
 
 
@@ -515,13 +609,14 @@ export default function AdminMessagesPage() {
                             </div>
                             <div>
                                 <Label>Body*</Label>
-                                <Input
+                                <Textarea
                                     required
                                     value={editForm?.body}
                                     onChange={(e) =>
-                                        setEditForm({ ...editForm, title: e.target.value })
+                                        setEditForm({ ...editForm, body: e.target.value })
                                     }
-                                />
+                                >
+                                </Textarea>
                             </div>
                             <div>
                                 <Label>Message From</Label>
