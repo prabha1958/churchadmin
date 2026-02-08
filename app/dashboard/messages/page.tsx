@@ -375,7 +375,7 @@ export default function AdminMessagesPage() {
 
 
     const fileUrl = (path?: string | null) => {
-        if (!path) return "/no-photo.png";
+        if (!path) return "/no-image.png";
         return `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/storage/${path}`;
     };
 
@@ -418,7 +418,7 @@ export default function AdminMessagesPage() {
                             </td>
                             <td className="pl-2">{msg.member_id}</td>
                             <td className="pl-2">{msg.title}</td>
-                            <td className="w-96"><Textarea value={msg.body} onChange={() => { }} /></td>
+                            <td className="w-96"><Textarea value={msg.body} readOnly /></td>
                             <td className="pl-2">{msg.message_type}</td>
                             <td className="pl-2">{msg.published_at ? format(msg.published_at, "dd-MM-yyyy") : ""}</td>
                             <td>

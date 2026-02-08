@@ -163,7 +163,7 @@ export default function MembersPage() {
     };
 
     const fileUrl = (path?: string | null) => {
-        if (!path) return "/no-photo.png";
+        if (!path) return "/avatar.png";
         return `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/storage/${path}`;
     };
 
@@ -459,6 +459,7 @@ export default function MembersPage() {
                         {members.map((m) => (
                             <tr key={m.id} className="odd:bg-blue-200 even:bg-blue-50">
                                 <td>
+
                                     <Image
                                         src={fileUrl(m.profile_photo)}
                                         alt="avatar"

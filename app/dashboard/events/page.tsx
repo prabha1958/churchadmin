@@ -439,7 +439,7 @@ export default function EventsPage() {
                             <td>{ev.id}</td>
                             <td className="pl-2">{format(ev.date_of_event, "dd-MM-yyyy")}</td>
                             <td className="pl-2">{ev.name_of_event}</td>
-                            <td className="w-96"><Textarea value={ev.description} /> </td>
+                            <td className="w-96"><Textarea value={ev.description} readOnly /> </td>
                             <td className="pl-2">{ev.event_photos.length}</td>
                             <td>{ev.published
                                 ? <button onClick={() => handlHideSubmit(ev.id)} className="bg-green-600 text-amber-50 font-bold my-1 px-2 py-1 rounded-xl">Hide</button>

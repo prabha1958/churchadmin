@@ -445,7 +445,7 @@ export default function EventsPage() {
                             <td>{pf.id}</td>
                             <td className="pl-2">{format(pf.date_of_event, "dd-MM-yyyy")}</td>
                             <td className="pl-2">{pf.sponsor.family_name} {pf.sponsor.first_name} {pf.sponsor.last_name}</td>
-                            <td className="w-96"><Textarea value={pf.brief_description} /> </td>
+                            <td className="w-96"><Textarea value={pf.brief_description} readOnly /> </td>
                             <td className="pl-2">{pf.no_of_persons_fed}</td>
                             <td className="pl-2">{pf.event_photos.length}</td>
                             <td>{pf.published

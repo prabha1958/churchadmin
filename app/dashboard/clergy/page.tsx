@@ -307,7 +307,7 @@ export default function PastrsPage() {
                             <td>{pastor.qualifications}</td>
                             <td>{format(pastor.date_of_joining, "dd-MM-yyyy")}</td>
                             <td>{pastor.date_of_leaving && format(pastor.date_of_leaving, "dd-MM-yyyy")}</td>
-                            <td className="w-96"><Textarea value={pastor.past_service_description} /></td>
+                            <td className="w-96"><Textarea value={pastor.past_service_description} readOnly /></td>
                             <td>{pastor.order_no}</td>
                             <td>
                                 <Button size="sm" onClick={() => openEdit(pastor)} className="bg-amber-400 text-amber-950 font-bold my-1">

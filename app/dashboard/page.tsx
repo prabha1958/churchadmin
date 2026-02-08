@@ -35,10 +35,10 @@ interface Dashboard {
     alliances: {
         published: number;
     }
-    greetings: {
-        birthday_last_run: string,
-        anniversary_last_run: string
-    }
+
+    birthday_last_run: string,
+    anniversary_last_run: string
+
     poor_feeding: {
         date_of_event: string;
         no_of_persons_fed: number;
@@ -56,6 +56,8 @@ export default function AdminDashboard() {
     const [dashboard, setDashboard] = useState<Dashboard | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const { token, isAdmin } = useAuth();
+    const [logs, setLogs] = useState<any[]>([]);
+    const [isRunning, setIsRunning] = useState(false);
 
 
     useEffect(() => {
@@ -79,6 +81,8 @@ export default function AdminDashboard() {
                 },
             });
 
+
+
             const data = await res.json();
             console.log(data)
 
@@ -94,39 +98,80 @@ export default function AdminDashboard() {
     }
 
     const sendBdayGreetings = async () => {
-        setIsLoading(true)
+        setIsLoading(true);
+        setLogs([]);
+        setIsRunning(true);
 
         try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/birthday/run`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
+                    },
+                }
+            );
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/run/birthday`, {
-                method: "POST",
-                headers: {
-
-                    Authorization: `Bearer ${token}`,
-                    Accept: "application/json",
-                },
-            });
-
-            if (!res) {
-                alert("Unable to load members");
+            if (!res.ok) {
+                alert("Unable to run birthday greetings");
+                setIsRunning(false);
             }
-
-        } catch {
-            alert("unable to send birthday greetings");
-            setIsLoading(false)
+        } catch (e) {
+            alert("Unable to send birthday greetings");
+            setIsRunning(false);
         } finally {
             setIsLoading(false);
         }
+    };
 
-    }
+
+    useEffect(() => {
+        if (!isRunning) return;
+
+        const interval = setInterval(fetchLogs, 1000);
+
+        return () => clearInterval(interval);
+    }, [isRunning]);
+
+    useEffect(() => {
+        if (logs.some(l => l.message.includes("completed"))) {
+            setIsRunning(false);
+        }
+    }, [logs])
+
+
+    const fetchLogs = async () => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/birthday/logs`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
+                    },
+                }
+            );
+
+            if (res.ok) {
+                setLogs(await res.json());
+            }
+        } catch (e) {
+            console.error("Failed to fetch logs", e);
+        }
+    };
+
 
 
     const sendAnnGreetings = async () => {
         setIsLoading(true)
+        setLogs([]);
+        setIsRunning(true);
 
         try {
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/run/anniversary`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/anniversay/run`, {
                 method: "POST",
                 headers: {
 
@@ -134,6 +179,8 @@ export default function AdminDashboard() {
                     Accept: "application/json",
                 },
             });
+
+
 
             if (!res) {
                 alert("Unable to load members");
@@ -147,6 +194,44 @@ export default function AdminDashboard() {
         }
 
     }
+
+    useEffect(() => {
+        if (!isRunning) return;
+
+        const interval = setInterval(fetchannLogs, 1000);
+
+        return () => clearInterval(interval);
+    }, [isRunning]);
+
+    useEffect(() => {
+        if (logs.some(l => l.message.includes("completed"))) {
+            setIsRunning(false);
+        }
+    }, [logs])
+
+
+    const fetchannLogs = async () => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/anniversary/logs`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
+                    },
+                }
+            );
+
+            if (res.ok) {
+                setLogs(await res.json());
+            }
+        } catch (e) {
+            console.error("Failed to fetch logs", e);
+        }
+    };
+
+
+
 
 
 
@@ -176,11 +261,18 @@ export default function AdminDashboard() {
                 <StatCard title="Areas" number={""} value="14" subtitle="Church areas" style="bg-[#048206] border-[#ed4f0c]" />
             </div>
 
+            <div className="bg-black text-green-400 font-mono text-sm p-3 rounded h-64 overflow-auto">
+                {logs.map((l, i) => (
+                    <div key={i}>• {l.message}</div>
+                ))}
+            </div>
+
             {/* GREETINGS SECTION */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                 <GreetingsCard
                     title="Birthday Greetings"
-                    lastRun={dashboard?.greetings.birthday_last_run?.toString() ?? "-"}
+                    lastRun={dashboard?.birthday_last_run?.toString() ?? "-"}
                     command="send:birthday-wishes"
                     style="bg-[#056603] border-[#ede609]"
                     onRun={sendBdayGreetings}
@@ -188,9 +280,10 @@ export default function AdminDashboard() {
 
                 />
 
+
                 <GreetingsCard
                     title="Anniversary Greetings"
-                    lastRun={dashboard?.greetings.anniversary_last_run?.toString() ?? "-"}
+                    lastRun={dashboard?.anniversary_last_run?.toString() ?? "-"}
                     command="greetings:anniversary"
                     style="bg-[#270994] border-[#0af2d3]"
                     onRun={sendAnnGreetings}
