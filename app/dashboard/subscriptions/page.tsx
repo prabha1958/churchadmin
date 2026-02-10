@@ -34,12 +34,12 @@ import {
 export default function SubscriptionsPage() {
     const [rows, setRows] = useState<any[]>([]);
     const [search, setSearch] = useState("");
-    const [months, setMonths] = useState(0)
+
     const { token, isAdmin } = useAuth();
     const [payModalOpen, setPayModalOpen] = useState(false);
     const [payMember, setPayMember] = useState<any>(null);
     const [unpaidMonths, setUnpaidMonths] = useState<string[]>([]);
-    const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+
     const [monthlyFee, setMonthlyFee] = useState<number>(0);
     const [isPaying, setIsPaying] = useState(false);
     const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -52,17 +52,37 @@ export default function SubscriptionsPage() {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [paymentMode, setPaymentMode] = useState<"cash" | "upi">("cash");
 
+    const FY_MONTHS = [
+        "apr", "may", "jun", "jul", "aug", "sep",
+        "oct", "nov", "dec", "jan", "feb", "mar"
+    ];
+
+    const getCurrentFYIndex = () => {
+        const now = new Date();
+        const m = now.getMonth(); // 0–11
+        return m >= 3 ? m - 3 : m + 9; // April = 0
+    };
 
 
+    type MonthRow = {
+        month: string;
+        paid: boolean;
+        paid_at?: string;
+        due: boolean;
 
+    };
 
-
+    const [months, setMonths] = useState<MonthRow[]>([]);
+    const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
 
     const openPayModal = async (row: any) => {
         setPayMember(row);
         setPayModalOpen(true);
 
-
+        // 🔑 reset
+        setSelectedMonths([]);
+        setMonths([]);
+        setMonthlyFee(0);
 
         const res = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/subscriptions/${row.member_id}/due`,
@@ -75,15 +95,45 @@ export default function SubscriptionsPage() {
         );
 
         const data = await res.json();
+        console.log("DUE RESPONSE", data);
 
-
-
-        if (res.ok) {
-            setUnpaidMonths(data.unpaid_months);
-            setSelectedMonths(data.unpaid_months); // default = pay all
-            setMonthlyFee(data.subscription.monthly_fee);
+        if (!res.ok) {
+            alert(data.message || "Failed to load subscription");
+            return;
         }
+
+        const subscription = data.subscription;
+        if (!subscription) {
+            alert("Subscription not found");
+            return;
+        }
+
+        const currentFYIndex = getCurrentFYIndex();
+
+        // ✅ Build months (PAID / DUE / FUTURE)
+        const monthRows = FY_MONTHS.map((month, index) => {
+            const paymentId = subscription[`${month}_payment_id`];
+
+            return {
+                month,
+                paid: Boolean(paymentId),
+                due: !paymentId && index <= currentFYIndex, // 🔥 key fix
+            };
+        });
+
+        setMonths(monthRows);
+
+        // ✅ Auto-select ONLY DUE months (not future)
+        setSelectedMonths(
+            monthRows.filter(m => m.due).map(m => m.month)
+        );
+
+        setMonthlyFee(Number(subscription.monthly_fee ?? 0));
     };
+
+
+
+
 
 
 
@@ -183,6 +233,7 @@ export default function SubscriptionsPage() {
 
                     alert("Payment successful");
                     setPayModalOpen(false);
+                    setConfirmOpen(false)
                     loadSubscriptions();
                 },
 
@@ -195,6 +246,8 @@ export default function SubscriptionsPage() {
             alert("Network error");
         } finally {
             setIsPaying(false);
+            setConfirmOpen(false)
+            setPayModalOpen(false);
         }
     };
 
@@ -246,6 +299,7 @@ export default function SubscriptionsPage() {
         const data = await res.json();
         console.log(data)
         if (!res.ok) {
+
             setIsCreating(false)
             alert(data.message);
             return;
@@ -340,19 +394,40 @@ export default function SubscriptionsPage() {
                             </div>
                         )}
                         <div className="space-y-2 w-[30%]  ">
-                            {allMonths.map((m) => (
-                                <label key={m} className="flex items-center gap-2 text-amber-200">
-                                    <Checkbox
-                                        checked={selectedMonths.includes(m)}
-                                        onCheckedChange={(checked) => {
-                                            setSelectedMonths((prev) =>
-                                                checked
-                                                    ? [...prev, m]
-                                                    : prev.filter((x) => x !== m)
-                                            );
+                            {months.map((m) => (
+                                <label
+                                    key={m.month}
+                                    className={`flex items-center gap-2 p-2 rounded
+            ${m.paid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+        `}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        disabled={m.paid}
+                                        checked={
+                                            m.paid ||
+                                            (m.due && selectedMonths.includes(m.month))
+                                        }
+                                        onChange={(e) => {
+                                            setSelectedMonths(prev => {
+                                                const safe = Array.isArray(prev) ? prev : [];
+
+                                                if (e.target.checked) {
+                                                    return [...new Set([...safe, m.month])];
+                                                }
+                                                return safe.filter(x => x !== m.month);
+                                            });
                                         }}
                                     />
-                                    <span className="capitalize">{m}</span>
+
+                                    <span className="capitalize">
+                                        {m.month}
+                                        {m.paid && (
+                                            <span className="ml-2 text-green-400 text-xs">
+                                                (Paid)
+                                            </span>
+                                        )}
+                                    </span>
                                 </label>
                             ))}
                         </div>
@@ -379,7 +454,7 @@ export default function SubscriptionsPage() {
 
 
                             <Button variant="destructive" onClick={() => setConfirmOpen(true)} className="p-2 mt-2 rounded-2xl bg-amber-500 text-amber-50">
-                                Confirm OFFLINE Payment
+                                Confirm  Payment received
                             </Button>
                         </div>
 
@@ -388,27 +463,28 @@ export default function SubscriptionsPage() {
 
                     {/* TOTAL */}
                     <div className="mt-4 text-right font-semibold">
-                        Total: ₹{selectedMonths.length * monthlyFee}
+
+                        Total: ₹{(selectedMonths?.length ?? 0) * (monthlyFee ?? 0)}
                     </div>
 
                     {/* ACTION */}
-                    <Button
-                        className="w-full mt-4 bg-green-600 text-gray-50 p-2 rounded-2xl"
-                        disabled={isPaying || selectedMonths.length === 0}
-                        onClick={handlePayNow}
+                  //  <Button
+                    //    className="w-full mt-4 bg-green-600 text-gray-50 p-2 rounded-2xl"
+                    //    disabled={isPaying || selectedMonths?.length === 0}
+                    //    onClick={handlePayNow}
 
                     >
-                        {isPaying ? "Creating payment..." : "Pay ONLINE"}
-                    </Button>
+                    //    {isPaying ? "Creating payment..." : "Pay ONLINE"}
+                  //  </Button>
                 </DialogContent>
             </Dialog>
             <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-                <AlertDialogContent className="bg-amber-100 text-blue-950">
+                <AlertDialogContent className="bg-[#5c2a02] text-[#fce2cc]">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Offline Payment</AlertDialogTitle>
+                        <AlertDialogTitle>Have you really received the due amount { } </AlertDialogTitle>
                         <AlertDialogDescription className="space-y-2">
                             <div><b>Member:</b> {payMember?.name}</div>
-                            <div><b>Months:</b> {selectedMonths.join(", ")}</div>
+                            <div><b>Months:</b> {selectedMonths?.join(", ")}</div>
                             <div><b>Mode:</b> {paymentMode.toUpperCase()}</div>
                             <div><b>Reference:</b> {referenceNo}</div>
                         </AlertDialogDescription>
