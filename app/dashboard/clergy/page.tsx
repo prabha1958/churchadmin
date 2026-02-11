@@ -325,49 +325,71 @@ export default function PastrsPage() {
 
             {/* ------------------ ADD MODAL ------------------ */}
             <Dialog open={addModal} onOpenChange={setAddModal}>
-                <DialogContent className="w-[95vw] bg-slate-900 text-white border-slate-700 px-2">
-                    <DialogHeader>
-                        <DialogTitle>Add Member</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto px-6 py-4">
-                        <form onSubmit={handleAddSubmit} className="space-y-4">
-                            {/* BLUR + LOADING OVERLAY */}
-                            {isCreating && (
-                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                                    <div className="text-center">
-                                        <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
-                                        <p className="text-sm">Creating member…</p>
-                                    </div>
+                <DialogContent
+                    className="
+                            w-[95vw]
+                            max-w-6xl
+                            bg-slate-900
+                            text-white
+                            border-slate-700
+                            p-0
+    "
+                >
+
+                    <form onSubmit={handleAddSubmit} className="relative">
+                        {/* BLUR + LOADING OVERLAY */}
+                        {isCreating && (
+                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                                <div className="text-center">
+                                    <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
+                                    <p className="text-sm">Creating member…</p>
                                 </div>
-                            )}
-                            {/* SUCCESS MESSAGE */}
-                            {successMsg && (
-                                <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
-                                    {successMsg}
+                            </div>
+                        )}
+
+                        {/* SUCCESS MESSAGE */}
+                        {successMsg && (
+                            <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
+                                {successMsg}
+                            </div>
+                        )}
+                        {/* HEADER */}
+                        <div className="px-6 py-4 border-b border-slate-700">
+                            <DialogTitle>Add Pastor </DialogTitle>
+                        </div>
+                        <div className="max-h-[65vh] overflow-y-auto px-6 py-4 space-y-6">
+                            <div className="flex flex-col items-center space-y-4">
+                                <div className="flex flex-col items-center mx-auto">
+                                    {addProfilePreview && (
+                                        <Image
+                                            src={addProfilePreview}
+                                            width={100}
+                                            height={100}
+                                            className="rounded"
+                                            alt="preview"
+                                        />
+                                    )}
+                                    <Label>Profile picture</Label>
+                                    <Input
+                                        type="file"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            setAddForm({ ...addForm, photo: file });
+                                            setAddProfilePreview(URL.createObjectURL(file));
+                                        }}
+                                    />
                                 </div>
-                            )}
-                            {/* Photo preview */}
-                            {addProfilePreview && (
-                                <Image
-                                    src={addProfilePreview}
-                                    width={100}
-                                    height={100}
-                                    className="rounded"
-                                    alt="preview"
-                                />
-                            )}
-                            <Label>Profile picture</Label>
-                            <Input
-                                type="file"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    setAddForm({ ...addForm, photo: file });
-                                    setAddProfilePreview(URL.createObjectURL(file));
-                                }}
-                            />
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
+
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <label className="text-amber-400">Name</label>
+                                    <Input
+                                        placeholder="Name *"
+                                        value={editForm.name || ""}
+                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex flex-col space-y-0.5 w-full">
                                     <Label>Name *</Label>
                                     <Input
                                         required
@@ -376,7 +398,7 @@ export default function PastrsPage() {
                                         }
                                     />
                                 </div>
-                                <div>
+                                <div className="flex flex-col space-y-0.5 w-full">
                                     <Label>Designation *</Label>
                                     <Input
                                         required
@@ -385,7 +407,7 @@ export default function PastrsPage() {
                                         }
                                     />
                                 </div>
-                                <div>
+                                <div className="flex flex-col space-y-0.5 w-full">
                                     <Label>Qualifications *</Label>
                                     <Input
                                         required
@@ -394,27 +416,7 @@ export default function PastrsPage() {
                                         }
                                     />
                                 </div>
-                                <div>
-                                    <Label>Date of Joining</Label>
-                                    <Input
-                                        type="date"
-
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, date_of_joining: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Date of Leaving</Label>
-                                    <Input
-                                        type="date"
-
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, date_of_leaving: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div>
+                                <div className="flex flex-col  space-y-0.5 w-full">
                                     <Label>About </Label>
                                     <Textarea
 
@@ -426,7 +428,27 @@ export default function PastrsPage() {
                                     </Textarea>
 
                                 </div>
-                                <div>
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <Label>Date of Joining</Label>
+                                    <Input
+                                        type="date"
+
+                                        onChange={(e) =>
+                                            setAddForm({ ...addForm, date_of_joining: e.target.value })
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <Label>Date of Leaving</Label>
+                                    <Input
+                                        type="date"
+
+                                        onChange={(e) =>
+                                            setAddForm({ ...addForm, date_of_leaving: e.target.value })
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col space-y-0.5 w-full">
                                     <Label>Order No</Label>
                                     <Input
                                         type="number"
@@ -436,14 +458,14 @@ export default function PastrsPage() {
                                         }
                                     />
                                 </div>
-                            </div>
-                            <Button type="submit" className="bg-blue-600 text-blue-50">
-                                Create Pastor
-                            </Button>
-                        </form>
-                    </div>
-                </DialogContent>
 
+                            </div>
+                        </div>
+                        <button type="submit" className="w-full  p-2 bg-green-900 text-amber-50">
+                            Create Pastor
+                        </button>
+                    </form>
+                </DialogContent>
             </Dialog>
             {/* ------------------ EDIT MODAL ------------------ */}
             <Dialog open={editModal} onOpenChange={setEditModal}>

@@ -479,137 +479,139 @@ export default function EventsPage() {
                     <DialogHeader>
                         <DialogTitle>Add Poorfeeding Event</DialogTitle>
                     </DialogHeader>
-                    <div className="flex-1 overflow-y-auto px-6 py-4">
-                        <form onSubmit={handleAddSubmit} className="space-y-4">
-                            {/* BLUR + LOADING OVERLAY */}
-                            {isCreating && (
-                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                                    <div className="text-center">
-                                        <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
-                                        <p className="text-sm">Creating Event…</p>
+                    <ScrollArea>
+                        <div className="flex-1 overflow-y-auto px-6 py-4">
+                            <form onSubmit={handleAddSubmit} className="space-y-4">
+                                {/* BLUR + LOADING OVERLAY */}
+                                {isCreating && (
+                                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                                        <div className="text-center">
+                                            <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
+                                            <p className="text-sm">Creating Event…</p>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                            {/* SUCCESS MESSAGE */}
-                            {successMsg && (
-                                <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
-                                    {successMsg}
-                                </div>
-                            )}
+                                )}
+                                {/* SUCCESS MESSAGE */}
+                                {successMsg && (
+                                    <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
+                                        {successMsg}
+                                    </div>
+                                )}
 
-                            <Label>Upload Pictures</Label>
-                            {photoPreviews.length > 0 && (
-                                <div className="grid grid-cols-4 gap-3 mt-4">
-                                    {photoPreviews.map((src, idx) => (
-                                        <div key={idx} className="relative group">
-                                            <img
-                                                src={src}
-                                                alt="preview"
-                                                className="h-28 w-full object-cover rounded-lg border border-slate-700"
-                                            />
+                                <Label>Upload Pictures</Label>
+                                {photoPreviews.length > 0 && (
+                                    <div className="grid grid-cols-4 gap-3 mt-4">
+                                        {photoPreviews.map((src, idx) => (
+                                            <div key={idx} className="relative group">
+                                                <img
+                                                    src={src}
+                                                    alt="preview"
+                                                    className="h-28 w-full object-cover rounded-lg border border-slate-700"
+                                                />
 
-                                            {/* Remove button */}
-                                            <button
-                                                type="button"
-                                                onClick={() => removePreview(idx)}
-                                                className="
+                                                {/* Remove button */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removePreview(idx)}
+                                                    className="
                                                             absolute top-1 right-1
                                                             bg-red-600 text-white
                                                             text-xs px-2 py-0.5
                                                             rounded opacity-0 group-hover:opacity-100
                                                         "
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
 
 
-                            <Input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={(e) => {
-                                    const newFiles = Array.from(e.target.files ?? []);
+                                <Input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const newFiles = Array.from(e.target.files ?? []);
 
-                                    // existing files
-                                    const existingFiles: File[] = addForm.event_photos ?? [];
-                                    const existingPreviews: string[] = photoPreviews ?? [];
+                                        // existing files
+                                        const existingFiles: File[] = addForm.event_photos ?? [];
+                                        const existingPreviews: string[] = photoPreviews ?? [];
 
-                                    // total count check
-                                    if (existingFiles.length + newFiles.length > 6) {
-                                        alert("Maximum 6 photos allowed");
-                                        e.target.value = ""; // reset input
-                                        return;
-                                    }
-
-                                    // append files
-                                    const combinedFiles = [...existingFiles, ...newFiles];
-                                    const combinedPreviews = [
-                                        ...existingPreviews,
-                                        ...newFiles.map((file) => URL.createObjectURL(file)),
-                                    ];
-
-                                    setAddForm({
-                                        ...addForm,
-                                        event_photos: combinedFiles,
-                                    });
-
-                                    setPhotoPreviews(combinedPreviews);
-
-                                    e.target.value = ""; // allow selecting same file again
-                                }}
-                            />
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <Label>Date of event</Label>
-                                    <Input
-                                        type="date"
-
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, date_of_event: e.target.value })
+                                        // total count check
+                                        if (existingFiles.length + newFiles.length > 6) {
+                                            alert("Maximum 6 photos allowed");
+                                            e.target.value = ""; // reset input
+                                            return;
                                         }
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Sponsored By</Label>
-                                    <Input
-                                        required
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, sponsored_by: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Description *</Label>
-                                    <Textarea
 
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, brief_description: e.target.value })
-                                        }
-                                    >
+                                        // append files
+                                        const combinedFiles = [...existingFiles, ...newFiles];
+                                        const combinedPreviews = [
+                                            ...existingPreviews,
+                                            ...newFiles.map((file) => URL.createObjectURL(file)),
+                                        ];
 
-                                    </Textarea>
+                                        setAddForm({
+                                            ...addForm,
+                                            event_photos: combinedFiles,
+                                        });
+
+                                        setPhotoPreviews(combinedPreviews);
+
+                                        e.target.value = ""; // allow selecting same file again
+                                    }}
+                                />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <Label>Date of event</Label>
+                                        <Input
+                                            type="date"
+
+                                            onChange={(e) =>
+                                                setAddForm({ ...addForm, date_of_event: e.target.value })
+                                            }
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Sponsored By</Label>
+                                        <Input
+                                            required
+                                            onChange={(e) =>
+                                                setAddForm({ ...addForm, sponsored_by: e.target.value })
+                                            }
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Description *</Label>
+                                        <Textarea
+
+                                            onChange={(e) =>
+                                                setAddForm({ ...addForm, brief_description: e.target.value })
+                                            }
+                                        >
+
+                                        </Textarea>
+                                    </div>
+                                    <div>
+                                        <Label>No of persons fed</Label>
+                                        <Input
+                                            required
+                                            onChange={(e) =>
+                                                setAddForm({ ...addForm, no_of_persons_fed: e.target.value })
+                                            }
+                                        />
+                                    </div>
+
+
                                 </div>
-                                <div>
-                                    <Label>No of persons fed</Label>
-                                    <Input
-                                        required
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, no_of_persons_fed: e.target.value })
-                                        }
-                                    />
-                                </div>
-
-
-                            </div>
-                            <Button type="submit" className="bg-blue-600 text-blue-50">
-                                Create Event
-                            </Button>
-                        </form>
-                    </div>
+                                <Button type="submit" className="bg-blue-600 text-blue-50">
+                                    Create Event
+                                </Button>
+                            </form>
+                        </div>
+                    </ScrollArea>
                 </DialogContent>
 
             </Dialog>

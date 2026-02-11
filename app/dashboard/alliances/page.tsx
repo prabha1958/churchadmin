@@ -600,12 +600,15 @@ export default function AlliancePage() {
             }
 
             alert("Offline payment recorded & receipt emailed");
-            setOfflineOpen(false);
-            setIsCreating(false)
-            loadAlliances();
+
 
         } catch {
             alert("Network error");
+        } finally {
+            setOfflineOpen(false);
+            setIsCreating(false)
+            setPayOpen(false)
+            loadAlliances();
         }
     };
 
@@ -715,7 +718,7 @@ export default function AlliancePage() {
                                         <button className="py-1 px-2 mt-2 border-2 border-blue-900 rounded-lg bg-blue-500 text-amber-50 cursor-pointer"
                                             onClick={() => {
                                                 setPayAlliance(a);
-                                                setPayOpen(true);
+                                                setOfflineOpen(true);
                                             }}
                                         >
                                             Pay

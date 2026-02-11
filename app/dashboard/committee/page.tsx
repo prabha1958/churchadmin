@@ -330,27 +330,38 @@ export default function PastrsPage() {
 
             {/* ------------------ ADD MODAL ------------------ */}
             <Dialog open={addModal} onOpenChange={setAddModal}>
-                <DialogContent className="w-[95vw] bg-slate-900 text-white border-slate-700 px-2">
-                    <DialogHeader>
-                        <DialogTitle>Add Pastorate Committee Member</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto px-6 py-4">
-                        <form onSubmit={handleAddSubmit} className="space-y-4">
-                            {/* BLUR + LOADING OVERLAY */}
-                            {isCreating && (
-                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                                    <div className="text-center">
-                                        <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
-                                        <p className="text-sm">Creating PC member…</p>
-                                    </div>
+                <DialogContent
+                    className="
+                            w-[95vw]
+                            max-w-6xl
+                            bg-slate-900
+                            text-white
+                            border-slate-700
+                            p-0
+    "
+                >
+
+                    <form onSubmit={handleAddSubmit} className="space-y-4">
+                        {/* BLUR + LOADING OVERLAY */}
+                        {isCreating && (
+                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                                <div className="text-center">
+                                    <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
+                                    <p className="text-sm">Creating PC member…</p>
                                 </div>
-                            )}
-                            {/* SUCCESS MESSAGE */}
-                            {successMsg && (
-                                <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
-                                    {successMsg}
-                                </div>
-                            )}
+                            </div>
+                        )}
+                        {/* SUCCESS MESSAGE */}
+                        {successMsg && (
+                            <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
+                                {successMsg}
+                            </div>
+                        )}
+                        {/* HEADER */}
+                        <div className="px-6 py-4 border-b border-slate-700">
+                            <DialogTitle>Edit Pastorate Committee Member </DialogTitle>
+                        </div>
+                        <div className="max-h-[65vh] overflow-y-auto px-6 py-4 space-y-6">
                             {/* Photo preview */}
                             {addProfilePreview && (
                                 <Image
@@ -449,13 +460,14 @@ export default function PastrsPage() {
 
                                 </div>
                                 <div>
-                                    <Label>Achivements</Label>
-                                    <Input
+                                    <Label>About the PC Member</Label>
+                                    <Textarea
 
                                         onChange={(e) =>
                                             setAddForm({ ...addForm, achievements: e.target.value })
                                         }
-                                    />
+                                    >
+                                    </Textarea>
                                 </div>
 
 
@@ -463,10 +475,9 @@ export default function PastrsPage() {
                             <Button type="submit" className="bg-blue-600 text-blue-50">
                                 Create Pastorate Comm Member
                             </Button>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </DialogContent>
-
             </Dialog>
             {/* ------------------ EDIT MODAL ------------------ */}
             <Dialog open={editModal} onOpenChange={setEditModal}>
