@@ -739,20 +739,21 @@ export default function AlliancePage() {
                 </table>
             </div>
             <Dialog open={addAllianceOpen} onOpenChange={setAddAllianceOpen}>
+                {/* BLUR + LOADING OVERLAY */}
+                {isCreating && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div className="text-center">
+                            <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
+                            <p className="text-sm">Creating alliance…</p>
+                        </div>
+                    </div>
+                )}
                 <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-gray-900 text-gray-50">
 
                     <DialogHeader>
                         <DialogTitle>Add Alliance</DialogTitle>
                     </DialogHeader>
-                    {/* BLUR + LOADING OVERLAY */}
-                    {isCreating && (
-                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                            <div className="text-center">
-                                <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
-                                <p className="text-sm">Creating alliance…</p>
-                            </div>
-                        </div>
-                    )}
+
 
                     <form onSubmit={handleAddAllianceSubmit} className="space-y-4">
 
@@ -1285,6 +1286,16 @@ export default function AlliancePage() {
             </Dialog>
             <Dialog open={payOpen} onOpenChange={setPayOpen}>
                 <DialogContent className="max-w-md bg-gray-900 text-gray-50">
+
+                    {isCreating && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                            <div className="text-center">
+                                <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
+                                <p className="text-sm">Payment being made…</p>
+                            </div>
+                        </div>
+                    )}
+
                     <DialogHeader>
                         <DialogTitle>Alliance Payment</DialogTitle>
                     </DialogHeader>
@@ -1304,13 +1315,12 @@ export default function AlliancePage() {
                             />
 
                             <div className="flex gap-3 justify-end mt-4">
-                                <Button onClick={handleAlliancePay} className="bg-blue-600">
-                                    Pay Online
-                                </Button>
+
 
                                 <Button
                                     variant="outline"
                                     onClick={() => setOfflineOpen(true)}
+                                    className="bg-amber-600 text-amber-100"
                                 >
                                     Pay Offline
                                 </Button>
@@ -1322,6 +1332,15 @@ export default function AlliancePage() {
 
             {offlineOpen && (
                 <Dialog open onOpenChange={setOfflineOpen}>
+                    {/* BLUR + LOADING OVERLAY */}
+                    {isCreating && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                            <div className="text-center">
+                                <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
+                                <p className="text-sm">Creating alliance…</p>
+                            </div>
+                        </div>
+                    )}
                     <DialogContent className="bg-gray-50 text-gray-950 text-[14px]">
                         <DialogHeader>
                             <DialogTitle>Confirm Offline Payment</DialogTitle>
