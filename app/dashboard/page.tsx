@@ -251,9 +251,20 @@ export default function AdminDashboard() {
                 <StatCard title="Areas" number={""} value="14" subtitle="Church areas" style="bg-[#048206] border-[#ed4f0c]" />
             </div>
 
-            <div className="bg-black text-green-400 font-mono text-sm p-3 rounded h-64 overflow-auto">
+            <div className="bg-black font-mono text-sm p-3 rounded h-64 overflow-auto">
                 {logs.map((l, i) => (
-                    <div key={i}>• {l.message}</div>
+                    <div
+                        key={i}
+                        className={
+                            l.level === "error"
+                                ? "text-red-400"
+                                : l.level === "success"
+                                    ? "text-green-400"
+                                    : "text-yellow-400"
+                        }
+                    >
+                        • {l.message}
+                    </div>
                 ))}
             </div>
 
