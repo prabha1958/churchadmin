@@ -57,7 +57,7 @@ export default function AdminDashboard() {
     const [isLoading, setIsLoading] = useState(false);
     const { token, isAdmin } = useAuth();
     const [logs, setLogs] = useState<any[]>([]);
-    const [isRunning, setIsRunning] = useState(false);
+    const [runningType, setRunningType] = useState<"birthday" | "anniversary" | null>(null);
 
 
     useEffect(() => {
@@ -98,12 +98,11 @@ export default function AdminDashboard() {
     }
 
     const sendBdayGreetings = async () => {
-        setIsLoading(true);
         setLogs([]);
-        setIsRunning(true);
+        setRunningType("birthday");
 
         try {
-            const res = await fetch(
+            await fetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/birthday/run`,
                 {
                     method: "POST",
@@ -113,33 +112,46 @@ export default function AdminDashboard() {
                     },
                 }
             );
-
-            if (!res.ok) {
-                alert("Unable to run birthday greetings");
-                setIsRunning(false);
-            }
-        } catch (e) {
+        } catch {
             alert("Unable to send birthday greetings");
-            setIsRunning(false);
-        } finally {
-            setIsLoading(false);
+            setRunningType(null);
         }
     };
 
-
     useEffect(() => {
-        if (!isRunning) return;
+        if (!runningType) return;
 
-        const interval = setInterval(fetchLogs, 1000);
+        const interval = setInterval(async () => {
+            try {
+                const url =
+                    runningType === "birthday"
+                        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/birthday/logs`
+                        : `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/anniversary/logs`;
+
+                const res = await fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
+                    },
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    setLogs(data);
+
+                    if (data.some((l: any) => l.message.includes("completed"))) {
+                        setRunningType(null);
+                    }
+                }
+            } catch (e) {
+                console.error("Log polling failed", e);
+            }
+        }, 1000);
 
         return () => clearInterval(interval);
-    }, [isRunning]);
+    }, [runningType, token]);
 
-    useEffect(() => {
-        if (logs.some(l => l.message.includes("completed"))) {
-            setIsRunning(false);
-        }
-    }, [logs])
+
 
 
     const fetchLogs = async () => {
@@ -165,49 +177,27 @@ export default function AdminDashboard() {
 
 
     const sendAnnGreetings = async () => {
-        setIsLoading(true)
         setLogs([]);
-        setIsRunning(true);
+        setRunningType("anniversary");
 
         try {
-
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/anniversay/run`, {
-                method: "POST",
-                headers: {
-
-                    Authorization: `Bearer ${token}`,
-                    Accept: "application/json",
-                },
-            });
-
-
-
-            if (!res) {
-                alert("Unable to load members");
-            }
-
+            await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/anniversary/run`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
+                    },
+                }
+            );
         } catch {
-            alert("unable to send birthday greetings");
-            setIsLoading(false)
-        } finally {
-            setIsLoading(false);
+            alert("Unable to send anniversary greetings");
+            setRunningType(null);
         }
+    };
 
-    }
 
-    useEffect(() => {
-        if (!isRunning) return;
-
-        const interval = setInterval(fetchannLogs, 1000);
-
-        return () => clearInterval(interval);
-    }, [isRunning]);
-
-    useEffect(() => {
-        if (logs.some(l => l.message.includes("completed"))) {
-            setIsRunning(false);
-        }
-    }, [logs])
 
 
     const fetchannLogs = async () => {
