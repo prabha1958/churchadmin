@@ -389,19 +389,12 @@ export default function PastrsPage() {
                                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                                     />
                                 </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label>Name *</Label>
-                                    <Input
-                                        required
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, name: e.target.value })
-                                        }
-                                    />
-                                </div>
+
                                 <div className="flex flex-col space-y-0.5 w-full">
                                     <Label>Designation *</Label>
                                     <Input
                                         required
+                                        placeholder="Designation"
                                         onChange={(e) =>
                                             setAddForm({ ...addForm, designation: e.target.value })
                                         }
@@ -411,6 +404,7 @@ export default function PastrsPage() {
                                     <Label>Qualifications *</Label>
                                     <Input
                                         required
+                                        placeholder="Qualifications"
                                         onChange={(e) =>
                                             setAddForm({ ...addForm, qualifications: e.target.value })
                                         }
@@ -419,7 +413,7 @@ export default function PastrsPage() {
                                 <div className="flex flex-col  space-y-0.5 w-full">
                                     <Label>About </Label>
                                     <Textarea
-
+                                        placeholder="About the pastor"
                                         onChange={(e) =>
                                             setAddForm({ ...addForm, past_service_description: e.target.value })
                                         }
