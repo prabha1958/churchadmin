@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, useRef } from "react";
 import Image from "next/image";
 import { useAuth } from "../../context/auth-provider";
 import { useRouter } from "next/navigation";
@@ -64,6 +64,8 @@ export default function EventsPage() {
     );
 
     const [editForm, setEditForm] = useState<any>({});
+    const addFileRef = useRef<HTMLInputElement | null>(null);
+    const editFileRef = useRef<HTMLInputElement | null>(null);
 
 
 
@@ -410,6 +412,29 @@ export default function EventsPage() {
 
         loadPfeedings();
     };
+
+
+    useEffect(() => {
+        if (!editModal) {
+            setEditProfilePreview(null);
+            setSelectedPfeeding(null);
+
+            if (editFileRef.current) {
+                editFileRef.current.value = "";
+            }
+        }
+    }, [editModal]);
+
+    useEffect(() => {
+        if (!addModal) {
+            setEditProfilePreview(null);
+            setSelectedPfeeding(null);
+
+            if (addFileRef.current) {
+                addFileRef.current.value = "";
+            }
+        }
+    }, [editModal]);
 
 
 
