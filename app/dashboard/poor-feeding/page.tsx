@@ -204,36 +204,26 @@ export default function EventsPage() {
 
         const formData = new FormData();
 
-
+        // 1️⃣ Append normal scalar fields only
         Object.entries(editForm).forEach(([key, val]) => {
             if (!val) return;
 
-            // ✅ Send ONLY new photos as files
-            if (key === "new_photos" && Array.isArray(val)) {
-                val.forEach((file: File) =>
-                    formData.append("event_photos[]", file)
-                );
-                return;
-            }
+            if (key === "new_photos") return; // skip files
+            if (key === "event_photos") return; // skip existing paths
 
-            // ❌ DO NOT send event_photos paths again
-            if (key === "event_photos") return;
-
-            // ✅ Scalars only
             formData.append(key, String(val));
         });
 
-
+        // 2️⃣ Append new photos once
         if (editForm.new_photos?.length) {
             editForm.new_photos.forEach((file: File) => {
                 formData.append("event_photos[]", file);
             });
 
-            // 🔑 THIS IS THE KEY
             formData.append("append_photos", "1");
         }
 
-        formData.append('_method', 'PATCH')
+        formData.append("_method", "PATCH");
 
         try {
 
