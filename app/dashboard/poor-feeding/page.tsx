@@ -190,6 +190,7 @@ export default function EventsPage() {
             ...pf,
             date: toDateInput(pf.date_of_event),
 
+
         });
 
         setEditModal(true);
@@ -257,6 +258,17 @@ export default function EventsPage() {
                 setTimeout(() => {
                     setEditModal(false);
                     setSuccessMsg(null);
+
+                    // ✅ Clear previews
+                    photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+                    setPhotoPreviews([]);
+
+                    // ✅ Clear new photos
+                    setEditForm((prev: any) => ({
+                        ...prev,
+                        new_photos: [],
+                    }));
+
                 }, 1500);
             } else {
                 alert(data.message || "Error creating member");
