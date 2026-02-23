@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "../context/auth-provider";
 import { Alert } from "@/components/ui/alert";
+import CashCollectionReport from "../components/CashCollectionReport";
 
 
 interface Dashboard {
@@ -294,7 +295,7 @@ export default function AdminDashboard() {
 
             {/* WELFARE & ACTIONS */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <PoorFeedingCard pfeeding={dashboard?.poor_feeding} />
+                <CashCollectionReport />
                 <QuickActions />
             </div>
         </div>

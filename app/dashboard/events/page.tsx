@@ -162,9 +162,21 @@ export default function EventsPage() {
                 loadEvents();
 
                 // auto close modal after short delay
+                // auto close modal after short delay
                 setTimeout(() => {
                     setAddModal(false);
                     setSuccessMsg(null);
+
+                    // ✅ Clear previews
+                    photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+                    setPhotoPreviews([]);
+
+                    // ✅ Clear new photos
+                    setAddForm((prev: any) => ({
+                        ...prev,
+                        new_photos: [],
+                    }));
+
                 }, 1500);
             } else {
                 alert(data.message || "Error creating member");
@@ -202,32 +214,22 @@ export default function EventsPage() {
         Object.entries(editForm).forEach(([key, val]) => {
             if (!val) return;
 
-            // ✅ Send ONLY new photos as files
-            if (key === "new_photos" && Array.isArray(val)) {
-                val.forEach((file: File) =>
-                    formData.append("event_photos[]", file)
-                );
-                return;
-            }
+            if (key === "new_photos") return; // skip files
+            if (key === "event_photos") return; // skip existing paths
 
-            // ❌ DO NOT send event_photos paths again
-            if (key === "event_photos") return;
-
-            // ✅ Scalars only
             formData.append(key, String(val));
         });
 
-
+        // 2️⃣ Append new photos once
         if (editForm.new_photos?.length) {
             editForm.new_photos.forEach((file: File) => {
                 formData.append("event_photos[]", file);
             });
 
-            // 🔑 THIS IS THE KEY
             formData.append("append_photos", "1");
         }
 
-        formData.append('_method', 'PATCH')
+        formData.append("_method", "PATCH");
 
         try {
 
@@ -261,6 +263,17 @@ export default function EventsPage() {
                 setTimeout(() => {
                     setEditModal(false);
                     setSuccessMsg(null);
+
+                    // ✅ Clear previews
+                    photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+                    setPhotoPreviews([]);
+
+                    // ✅ Clear new photos
+                    setEditForm((prev: any) => ({
+                        ...prev,
+                        new_photos: [],
+                    }));
+
                 }, 1500);
             } else {
                 alert(data.message || "Error creating member");
@@ -389,7 +402,7 @@ export default function EventsPage() {
 
 
     const removePhoto = async (path: string) => {
-        await fetch(
+        const res = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/events/${selectedEvent?.id}/photo`,
             {
                 method: "DELETE",
@@ -402,6 +415,23 @@ export default function EventsPage() {
             }
         );
 
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.message || "Failed to remove photo");
+            return;
+        }
+
+        // ✅ 1. Update selectedPfeeding immediately
+        setSelectedEvent(data.event);
+
+        // ✅ 2. Update editForm immediately
+        setEditForm((prev: any) => ({
+            ...prev,
+            event_photos: data.event.event_photos,
+        }));
+
+        // ✅ 3. Refresh table (optional)
         loadEvents();
     };
 

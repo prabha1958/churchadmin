@@ -119,8 +119,10 @@ export default function EventsPage() {
 
     const openAdd = () => {
         setAddForm({});
-        setAddProfilePreview(null);
+        photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+        setPhotoPreviews([]);
         setAddModal(true);
+
     };
 
     const handleAddSubmit = async (e: FormEvent) => {
@@ -168,9 +170,21 @@ export default function EventsPage() {
                 loadPfeedings();
 
                 // auto close modal after short delay
+                // auto close modal after short delay
                 setTimeout(() => {
                     setAddModal(false);
                     setSuccessMsg(null);
+
+                    // ✅ Clear previews
+                    photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+                    setPhotoPreviews([]);
+
+                    // ✅ Clear new photos
+                    setAddForm((prev: any) => ({
+                        ...prev,
+                        new_photos: [],
+                    }));
+
                 }, 1500);
             } else {
                 alert(data.message || "Error creating member");
@@ -192,6 +206,8 @@ export default function EventsPage() {
 
 
         });
+        photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+        setPhotoPreviews([]);
 
         setEditModal(true);
     };
@@ -397,7 +413,7 @@ export default function EventsPage() {
 
 
     const removePhoto = async (path: string) => {
-        await fetch(
+        const res = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings/${selectedPfeeding?.id}/photo`,
             {
                 method: "DELETE",
@@ -410,6 +426,23 @@ export default function EventsPage() {
             }
         );
 
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.message || "Failed to remove photo");
+            return;
+        }
+
+        // ✅ 1. Update selectedPfeeding immediately
+        setSelectedPfeeding(data.data);
+
+        // ✅ 2. Update editForm immediately
+        setEditForm((prev: any) => ({
+            ...prev,
+            event_photos: data.data.event_photos,
+        }));
+
+        // ✅ 3. Refresh table (optional)
         loadPfeedings();
     };
 
@@ -773,7 +806,7 @@ export default function EventsPage() {
                                     <Input
                                         placeholder="no of persons fed"
                                         value={editForm.no_of_persons_fed || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, no_persons_fed: e.target.value })}
+                                        onChange={(e) => setEditForm({ ...editForm, no_of_persons_fed: e.target.value })}
                                     />
                                 </div>
 
