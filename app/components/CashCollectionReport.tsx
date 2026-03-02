@@ -127,7 +127,7 @@ export default function CashCollectionReport() {
                         onClick={fetchDailyReport}
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
-                        {loadingReport ? "Generating..." : "Generate Report"}
+                        {loadingReport ? "Generating..." : "Generate collection Report"}
                     </button>
                 </div>
 
@@ -147,9 +147,10 @@ export default function CashCollectionReport() {
                         {collections && (
                             <div id="print-section" className="w-7xl bg-white text-black p-6 rounded mt-6 overflow-auto">
                                 <h2 className="text-xl font-bold text-center mb-2">
-                                    Daily Payment Report
+                                    Daily Collection Report
                                 </h2>
                                 <p>Date: {selectedDate}</p>
+                                <p>Admin name : {collections.admin_name}</p>
 
                                 <table className="w-5xl border mt-4 text-sm scroll-auto">
                                     <thead>

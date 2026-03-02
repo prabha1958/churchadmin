@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Image from "next/image";
 
 const API_BASE_URL = "http://localhost:8000/api"; // adjust if no /api prefix
 
@@ -48,6 +49,7 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [infoMessage, setInfoMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
 
     const resetMessages = () => {
         setInfoMessage(null);
@@ -174,10 +176,18 @@ export default function Login() {
 
     return (
 
-        <Card className="w-full  border-slate-700 bg-blue-800 text-slate-50 shadow-2xl">
+        <Card className="w-96  border-slate-700 bg-blue-800 text-slate-50 shadow-2xl">
             <CardHeader>
+                <div className="w-full flex items-center justify-center p-2">
+                    <Image
+                        src={"/logo.png"}
+                        alt="logo"
+                        width={70}
+                        height={70}
+                    />
+                </div>
                 <CardTitle className="text-xl font-semibold">
-                    CSI WCR Admin Login
+                    CHURCH Admin Login
                 </CardTitle>
                 <CardDescription className="text-slate-300">
                     Admins only. Use your registered email or whatsapp mobile to receive an OTP.
