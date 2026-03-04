@@ -384,8 +384,9 @@ export default function PastrsPage() {
                                 <div className="flex flex-col space-y-0.5 w-full">
                                     <label className="text-amber-400">Name</label>
                                     <Input
+                                        required
                                         placeholder="Name *"
-                                        value={addForm.name || ""}
+
                                         onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
                                     />
                                 </div>
