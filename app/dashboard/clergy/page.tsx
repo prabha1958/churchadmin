@@ -385,8 +385,8 @@ export default function PastrsPage() {
                                     <label className="text-amber-400">Name</label>
                                     <Input
                                         placeholder="Name *"
-                                        value={editForm.name || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                        value={addForm.name || ""}
+                                        onChange={(e) => setEditForm({ ...addForm, name: e.target.value })}
                                     />
                                 </div>
 
