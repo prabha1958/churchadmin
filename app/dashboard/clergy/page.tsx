@@ -132,6 +132,7 @@ export default function PastrsPage() {
         });
 
         try {
+
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/pastors`, {
                 method: "POST",
                 headers: {
