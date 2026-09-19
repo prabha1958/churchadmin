@@ -96,7 +96,7 @@ export default function SubscriptionsPage() {
         );
 
         const data = await res.json();
-        console.log("DUE RESPONSE", data);
+
 
         if (!res.ok) {
             alert(data.message || "Failed to load subscription");
