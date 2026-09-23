@@ -1,19 +1,14 @@
 "use client";
 
 import { FormEvent, useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const API_BASE_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function SetupAdminPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
 
-    const churchCode =
-        searchParams.get("church_code") ||
-        searchParams.get("churchCode") ||
-        "";
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
