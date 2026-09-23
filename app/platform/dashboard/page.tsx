@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
     completePlatformOnboarding,
-    getPlatformChurch,
+    getPlatformChurch, createSetupAdmin,
 } from "@/lib/platform-api";
 
 interface PlatformChurch {
@@ -33,6 +33,16 @@ export default function PlatformDashboardPage() {
         useState(false);
 
     const [completionError, setCompletionError] =
+        useState<string | null>(null);
+    const [adminName, setAdminName] = useState("");
+    const [adminEmail, setAdminEmail] = useState("");
+
+    const [creatingAdmin, setCreatingAdmin] = useState(false);
+
+    const [adminSuccess, setAdminSuccess] =
+        useState<string | null>(null);
+
+    const [adminError, setAdminError] =
         useState<string | null>(null);
 
 
@@ -117,6 +127,64 @@ export default function PlatformDashboardPage() {
         }
     };
 
+    const handleCreateSetupAdmin = async (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
+        event.preventDefault();
+
+        if (creatingAdmin) return;
+
+        setAdminSuccess(null);
+        setAdminError(null);
+
+        const name = adminName.trim();
+        const email = adminEmail.trim().toLowerCase();
+
+        if (!name) {
+            setAdminError("Administrator name is required.");
+            return;
+        }
+
+        if (!email) {
+            setAdminError("Administrator email is required.");
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setAdminError("Please enter a valid email address.");
+            return;
+        }
+
+        setCreatingAdmin(true);
+
+        try {
+            await createSetupAdmin({
+                name,
+                email,
+            });
+
+            setAdminSuccess(
+                `Setup administrator created successfully. A welcome email has been sent to ${email}.`
+            );
+
+            setAdminName("");
+            setAdminEmail("");
+        } catch (error) {
+            console.error(
+                "Unable to create setup administrator:",
+                error
+            );
+
+            setAdminError(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to create setup administrator."
+            );
+        } finally {
+            setCreatingAdmin(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Welcome */}
@@ -142,8 +210,8 @@ export default function PlatformDashboardPage() {
                         {church.status && (
                             <span
                                 className={`rounded-full px-2.5 py-1 text-xs font-semibold ${church.status === "active"
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-amber-100 text-amber-700"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-amber-100 text-amber-700"
                                     }`}
                             >
                                 {church.status === "active"
@@ -235,6 +303,111 @@ export default function PlatformDashboardPage() {
                     )}
                 </div>
             </section>
+
+            {/* Setup Administrator */}
+            {church?.status !== "active" && (
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                    <div>
+                        <p className="text-sm font-semibold text-slate-900">
+                            Setup Administrator
+                        </p>
+
+                        <p className="mt-1 text-sm leading-6 text-slate-500">
+                            Create the administrator account for this church.
+                            The administrator will receive a temporary password
+                            by email and will be required to create a permanent
+                            password on first sign-in.
+                        </p>
+                    </div>
+
+                    <form
+                        onSubmit={handleCreateSetupAdmin}
+                        className="mt-6 space-y-5"
+                    >
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            {/* Name */}
+                            <div>
+                                <label
+                                    htmlFor="setup-admin-name"
+                                    className="block text-sm font-medium text-slate-700"
+                                >
+                                    Administrator name
+                                </label>
+
+                                <input
+                                    id="setup-admin-name"
+                                    type="text"
+                                    value={adminName}
+                                    onChange={(event) =>
+                                        setAdminName(event.target.value)
+                                    }
+                                    disabled={creatingAdmin}
+                                    placeholder="Enter full name"
+                                    autoComplete="name"
+                                    className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-100"
+                                />
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <label
+                                    htmlFor="setup-admin-email"
+                                    className="block text-sm font-medium text-slate-700"
+                                >
+                                    Administrator email
+                                </label>
+
+                                <input
+                                    id="setup-admin-email"
+                                    type="email"
+                                    value={adminEmail}
+                                    onChange={(event) =>
+                                        setAdminEmail(event.target.value)
+                                    }
+                                    disabled={creatingAdmin}
+                                    placeholder="admin@example.com"
+                                    autoComplete="email"
+                                    className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:bg-slate-100"
+                                />
+                            </div>
+                        </div>
+
+                        {adminError && (
+                            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                                <p className="text-sm font-medium text-red-700">
+                                    {adminError}
+                                </p>
+                            </div>
+                        )}
+
+                        {adminSuccess && (
+                            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                                <p className="text-sm font-medium text-green-700">
+                                    {adminSuccess}
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-xs leading-5 text-slate-500">
+                                The temporary password will be sent directly to
+                                the administrator by email. It will not be displayed
+                                here.
+                            </p>
+
+                            <button
+                                type="submit"
+                                disabled={creatingAdmin}
+                                className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {creatingAdmin
+                                    ? "Creating..."
+                                    : "Create Setup Administrator"}
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            )}
 
             {/* Church information */}
             {church && (
