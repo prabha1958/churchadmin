@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 const API_BASE_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -20,6 +21,76 @@ export default function ChurchRegistrationPage() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const searchParams = useSearchParams();
+
+    const registrationRequestId =
+        searchParams.get("registration_request_id");
+
+
+
+    useEffect(() => {
+        if (!registrationRequestId) {
+            return;
+        }
+
+        const loadRegistrationRequest = async () => {
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/onboarding/registration-requests/${registrationRequestId}`,
+                    {
+                        headers: {
+                            Accept: "application/json",
+                        },
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || result?.success !== true) {
+                    throw new Error(
+                        result?.message ||
+                        "Unable to load registration request."
+                    );
+                }
+
+                const request = result.data;
+
+                setChurchName(request.church_name || "");
+                setAddress(request.address || "");
+                setCity(request.city || "");
+
+                if (request.state) {
+                    setState(request.state);
+                }
+
+                if (request.country) {
+                    setCountry(request.country);
+                }
+
+                setContactEmail(
+                    request.admin_email || ""
+                );
+
+                setContactPhone(
+                    request.admin_phone || ""
+                );
+            } catch (error) {
+                console.error(
+                    "Unable to load registration request:",
+                    error
+                );
+
+                setError(
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to load registration request."
+                );
+            }
+        };
+
+        loadRegistrationRequest();
+    }, [registrationRequestId]);
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -35,6 +106,9 @@ export default function ChurchRegistrationPage() {
             country: country.trim(),
             contact_email: contactEmail.trim().toLowerCase(),
             contact_phone: contactPhone.trim(),
+            registration_request_id: registrationRequestId
+                ? Number(registrationRequestId)
+                : null,
         };
 
         if (!payload.church_name) {

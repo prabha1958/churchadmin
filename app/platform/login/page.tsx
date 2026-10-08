@@ -61,6 +61,8 @@ export default function PlatformLoginPage() {
             const user = data.data?.user;
             const church = data.data?.church;
 
+            console.log("Platform login response:", data);
+
             if (!token || !user || !church) {
                 throw new Error(
                     "The server returned an incomplete login response."
@@ -88,9 +90,22 @@ export default function PlatformLoginPage() {
 
             if (user.must_change_password) {
                 router.replace("/platform/setup-password");
-            } else {
-                router.replace("/platform/dashboard");
+                return;
             }
+
+            if (user.role === "owner") {
+                router.replace("/platform/owner-dashboard");
+                return;
+            }
+
+            if (user.role === "setup-admin") {
+                router.replace("/platform/dashboard");
+                return;
+            }
+
+            setErrorMessage(
+                "Your account does not have a valid platform role."
+            );
         } catch (error) {
             console.error("Platform login error:", error);
 
@@ -117,14 +132,13 @@ export default function PlatformLoginPage() {
                             priority
                         />
                     </div>
-
                     <CardTitle className="text-2xl font-semibold text-slate-900">
-                        Setup Administrator
+                        Church Community Platform
                     </CardTitle>
 
                     <CardDescription className="text-slate-600">
-                        Sign in to set up and manage your church
-                        community app.
+                        Sign in to manage churches, licenses, and
+                        community administration.
                     </CardDescription>
                 </CardHeader>
 
@@ -189,7 +203,7 @@ export default function PlatformLoginPage() {
 
                 <CardFooter className="justify-center">
                     <p className="text-xs text-slate-500 text-center">
-                        Church Community · Setup Administration
+                        Church Community · Platform Administration
                     </p>
                 </CardFooter>
             </Card>
