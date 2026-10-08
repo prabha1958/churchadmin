@@ -42,15 +42,9 @@ export default function OwnerDashboardPage() {
 
     useEffect(() => {
         const token = localStorage.getItem("platform_token");
-        const role = localStorage.getItem("platform_role");
 
         if (!token) {
             router.replace("/platform/login");
-            return;
-        }
-
-        if (role !== "owner") {
-            router.replace("/platform/dashboard");
             return;
         }
 
