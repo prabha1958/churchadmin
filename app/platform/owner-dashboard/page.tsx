@@ -66,17 +66,17 @@ export default function OwnerDashboardPage() {
                 licensesResponse,
             ] = await Promise.all([
                 fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/platform/church-registration-requests?status=pending`,
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/platform/church-registration-requests?status=pending`,
                     { headers }
                 ),
 
                 fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/platform/church-registration-requests?status=approved`,
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/platform/church-registration-requests?status=approved`,
                     { headers }
                 ),
 
                 fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/platform/licenses`,
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/platform/licenses`,
                     { headers }
                 ),
             ]);
@@ -109,6 +109,8 @@ export default function OwnerDashboardPage() {
                     licensesData?.data?.total ??
                     0,
             });
+
+            console.log(approvedData)
         } catch (error) {
             console.error(
                 "Owner dashboard error:",
