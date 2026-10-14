@@ -40,6 +40,7 @@ type Member = {
 
     status_flag?: boolean;
     created_at?: string;
+    role: string;
 };
 
 type Pagination = {
@@ -910,6 +911,90 @@ export default function MembersPage() {
         return String(errors);
     };
 
+
+
+    async function handleRoleChange(
+        member: Member,
+        newRole: "member" | "admin"
+    ) {
+        const action = newRole === "admin" ? "promote" : "demote";
+
+        if (
+            !window.confirm(
+                `Are you sure you want to ${action} ${getFullName(member)} ${newRole === "admin" ? "to administrator" : "to a regular member"
+                }?`
+            )
+        ) {
+            return;
+        }
+
+        const token = localStorage.getItem("platform_token");
+        const storedChurch = localStorage.getItem("platform_church");
+
+        if (!token || !storedChurch) {
+            setErrorMessage("Your platform session has expired. Please sign in again.");
+            return;
+        }
+
+        let churchCode = "";
+
+        try {
+            churchCode = String(JSON.parse(storedChurch)?.church_code || "").trim();
+        } catch {
+            setErrorMessage("Invalid church information. Please sign in again.");
+            return;
+        }
+
+        if (!churchCode) {
+            setErrorMessage("Church code is missing. Please sign in again.");
+            return;
+        }
+
+        setErrorMessage("");
+        setSuccessMessage("");
+
+        try {
+            const storedToken = localStorage.getItem("platform_token");
+
+            const response = await fetch(
+                `${API_BASE_URL}/platform/members/${member.id}/role`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${storedToken}`,
+                        "X-Church-Code": churchCode,
+                    },
+                    body: JSON.stringify({ role: newRole }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "Unable to update the member role.");
+            }
+
+            setMembers((previous) =>
+                previous.map((item) =>
+                    item.id === member.id
+                        ? { ...item, role: result.data.role }
+                        : item
+                )
+            );
+
+            setSuccessMessage(result.message);
+        } catch (error) {
+            setErrorMessage(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to update the member role."
+            );
+        }
+    }
+
+
     return (
         <div className="min-h-screen bg-slate-50">
             <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -1094,6 +1179,8 @@ export default function MembersPage() {
                                                             <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-slate-600">
                                                                 Status
                                                             </th>
+                                                            <th className="px-5 py-3">Role</th>
+                                                            <th className="px-5 py-3">Action</th>
                                                         </tr>
                                                     </thead>
 
@@ -1154,6 +1241,9 @@ export default function MembersPage() {
                                                                         item.data.status
                                                                     )}
                                                                 </td>
+
+
+
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -2084,6 +2174,34 @@ export default function MembersPage() {
 
                                                 <td className="px-5 py-4">
                                                     <StatusBadge status={member.status} />
+                                                </td>
+
+                                                <td className="px-5 py-4">
+                                                    <span
+                                                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${member.role === "admin"
+                                                            ? "bg-amber-100 text-amber-800"
+                                                            : "bg-slate-100 text-slate-700"
+                                                            }`}
+                                                    >
+                                                        {member.role === "admin" ? "Admin" : "Member"}
+                                                    </span>
+                                                </td>
+
+                                                <td className="px-5 py-4">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleRoleChange(
+                                                                member,
+                                                                member.role === "admin" ? "member" : "admin"
+                                                            )
+                                                        }
+                                                        className="rounded-lg border border-[#191970] px-3 py-2 text-xs font-semibold text-[#191970] hover:bg-[#191970] hover:text-white"
+                                                    >
+                                                        {member.role === "admin"
+                                                            ? "Change to Member"
+                                                            : "Promote to Admin"}
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}

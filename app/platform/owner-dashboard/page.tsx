@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+
 import {
     Card,
     CardContent,
@@ -17,6 +18,8 @@ import {
     CreditCard,
     LogOut,
     Users,
+    Link,
+    ArrowRight,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -175,6 +178,7 @@ export default function OwnerDashboardPage() {
                 {/* Summary Cards */}
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {/* Pending Requests */}
+
                     <Card className="border-slate-200 shadow-sm">
                         <CardHeader className="flex flex-row items-center justify-between pb-3">
                             <CardTitle className="text-sm font-medium text-slate-600">
@@ -197,28 +201,29 @@ export default function OwnerDashboardPage() {
                         </CardContent>
                     </Card>
 
+
                     {/* Approved Requests */}
-                    <Card className="border-slate-200 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between pb-3">
-                            <CardTitle className="text-sm font-medium text-slate-600">
-                                Approved Requests
-                            </CardTitle>
 
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        </CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between pb-3">
+                        <CardTitle className="text-sm font-medium text-slate-600">
+                            Approved Requests
+                        </CardTitle>
 
-                        <CardContent>
-                            <div className="text-3xl font-bold text-slate-900">
-                                {loading
-                                    ? "..."
-                                    : stats.approvedRequests}
-                            </div>
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    </CardHeader>
 
-                            <p className="mt-1 text-xs text-slate-500">
-                                Registration requests approved
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-slate-900">
+                            {loading
+                                ? "..."
+                                : stats.approvedRequests}
+                        </div>
+
+                        <p className="mt-1 text-xs text-slate-500">
+                            Registration requests approved
+                        </p>
+                    </CardContent>
+
 
                     {/* Active Churches */}
                     <Card className="border-slate-200 shadow-sm">
@@ -279,7 +284,7 @@ export default function OwnerDashboardPage() {
                             className="cursor-pointer border-slate-200 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                             onClick={() =>
                                 router.push(
-                                    "/platform/church-registration-requests"
+                                    "/platform/owner-dashboard/church-registration-requests"
                                 )
                             }
                         >

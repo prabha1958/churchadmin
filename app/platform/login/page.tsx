@@ -98,7 +98,7 @@ export default function PlatformLoginPage() {
                 return;
             }
 
-            if (user.role === "setup-admin") {
+            if (user.role === "setup_admin") {
                 router.replace("/platform/dashboard");
                 return;
             }

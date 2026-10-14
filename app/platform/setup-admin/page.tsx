@@ -2,12 +2,21 @@
 
 import { FormEvent, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 const API_BASE_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function SetupAdminPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const adminName = searchParams.get("admin_name") ?? "";
+    const adminEmail = searchParams.get("admin_email") ?? "";
+
+
+
+
 
 
     const [name, setName] = useState("");
@@ -43,6 +52,18 @@ export default function SetupAdminPage() {
             router.push("/platform/register");
         }
     }, [router]);
+
+    useEffect(() => {
+        if (adminName) {
+            setName(adminName);
+        }
+    }, [adminName]);
+
+    useEffect(() => {
+        if (adminEmail) {
+            setEmail(adminEmail);
+        }
+    }, [adminEmail]);
 
     const handleSubmit = async (
         event: FormEvent<HTMLFormElement>
@@ -95,24 +116,29 @@ export default function SetupAdminPage() {
             | - Church is identified by the church code.
             |--------------------------------------------------------------------------
             */
-
+            const token = localStorage.getItem("platform_token");
             const response = await fetch(
-                `${API_BASE_URL}/onboarding/setup-admin`,
+                `${API_BASE_URL}/setup-admin`,
                 {
                     method: "POST",
 
                     headers: {
                         Accept: "application/json",
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+
                     },
 
                     body: JSON.stringify({
                         church_code: trimmedChurchCode,
                         name: trimmedName,
                         email: trimmedEmail,
+
                     }),
                 }
             );
+
+
 
             const result = await response
                 .json()
