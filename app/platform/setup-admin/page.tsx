@@ -1,38 +1,32 @@
+
 "use client";
 
-import { FormEvent, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { Suspense, FormEvent, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-const API_BASE_URL =
-    process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-export default function SetupAdminPage() {
+type Church = {
+    id: number;
+    church_name: string;
+    short_name: string | null;
+    church_code: string;
+    status: string;
+};
+
+function SetupAdminForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
     const adminName = searchParams.get("admin_name") ?? "";
     const adminEmail = searchParams.get("admin_email") ?? "";
 
-
-
-
-
-
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-
-    const [church, setChurch] = useState<{
-        id: number;
-        church_name: string;
-        short_name: string | null;
-        church_code: string;
-        status: string;
-    } | null>(null);
+    const [church, setChurch] = useState<Church | null>(null);
 
     useEffect(() => {
         const storedChurch = localStorage.getItem("platform_church");
@@ -43,12 +37,14 @@ export default function SetupAdminPage() {
         }
 
         try {
-            const parsedChurch = JSON.parse(storedChurch);
+            const parsedChurch = JSON.parse(storedChurch) as Church;
             setChurch(parsedChurch);
         } catch (error) {
             console.error("Invalid stored church:", error);
+
             localStorage.removeItem("platform_church");
             localStorage.removeItem("church_code");
+
             router.push("/platform/register");
         }
     }, [router]);
@@ -79,8 +75,6 @@ export default function SetupAdminPage() {
         const trimmedEmail = email.trim().toLowerCase();
         const trimmedChurchCode = church?.church_code.trim();
 
-
-
         if (!trimmedChurchCode) {
             setError(
                 "Church code is missing. Please return to church registration and try again."
@@ -103,46 +97,41 @@ export default function SetupAdminPage() {
             return;
         }
 
+        if (!API_BASE_URL) {
+            setError(
+                "Backend URL is not configured. Please check NEXT_PUBLIC_BACKEND_URL."
+            );
+            return;
+        }
+
         setSubmitting(true);
 
         try {
             /*
-            |--------------------------------------------------------------------------
-            | Initial setup administrator creation happens BEFORE platform login.
-            |
-            | Therefore:
-            | - No platform token is required.
-            | - No Authorization header is sent.
-            | - Church is identified by the church code.
-            |--------------------------------------------------------------------------
-            */
+             * Submit the setup administrator details for the selected church.
+             */
             const token = localStorage.getItem("platform_token");
+
             const response = await fetch(
-                `${API_BASE_URL}/setup-admin`,
+                `${API_BASE_URL.replace(/\/+$/, "")}/setup-admin`,
                 {
                     method: "POST",
-
                     headers: {
                         Accept: "application/json",
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-
+                        ...(token
+                            ? { Authorization: `Bearer ${token}` }
+                            : {}),
                     },
-
                     body: JSON.stringify({
                         church_code: trimmedChurchCode,
                         name: trimmedName,
                         email: trimmedEmail,
-
                     }),
                 }
             );
 
-
-
-            const result = await response
-                .json()
-                .catch(() => ({}));
+            const result = await response.json().catch(() => ({}));
 
             console.log("SETUP ADMIN HTTP RESPONSE", {
                 url: response.url,
@@ -165,26 +154,13 @@ export default function SetupAdminPage() {
                 );
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Setup administrator was successfully created.
-            |--------------------------------------------------------------------------
-            */
-
             setSuccess(
                 "Setup administrator created successfully. Login instructions will be sent by email."
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | The administrator now needs to login.
-            |--------------------------------------------------------------------------
-            */
-
             setTimeout(() => {
                 router.replace("/platform/login");
             }, 1200);
-
         } catch (error) {
             console.error(
                 "Unable to create setup administrator:",
@@ -205,7 +181,6 @@ export default function SetupAdminPage() {
         <main className="min-h-screen bg-slate-50">
             <div className="mx-auto flex min-h-screen w-full max-w-2xl items-center justify-center px-4 py-10 sm:px-6">
                 <div className="w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-
                     {/* Header */}
                     <div className="mb-8">
                         <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -237,7 +212,6 @@ export default function SetupAdminPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-
                         {/* Name */}
                         <div>
                             <label
@@ -325,5 +299,21 @@ export default function SetupAdminPage() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function SetupAdminPage() {
+    return (
+        <Suspense
+            fallback={
+                <main className="flex min-h-screen items-center justify-center bg-slate-50">
+                    <p className="text-sm text-slate-600">
+                        Loading administrator setup...
+                    </p>
+                </main>
+            }
+        >
+            <SetupAdminForm />
+        </Suspense>
     );
 }
