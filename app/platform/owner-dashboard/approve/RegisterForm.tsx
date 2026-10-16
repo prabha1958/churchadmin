@@ -117,6 +117,8 @@ export default function ChurchRegistrationPage() {
         return () => controller.abort();
     }, [registrationRequestId]);
 
+
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -182,8 +184,11 @@ export default function ChurchRegistrationPage() {
         setSubmitting(true);
 
         try {
+
+            const storedToken = localStorage.getItem("platform_token");
+
             const response = await fetch(
-                `${API_BASE_URL}/platform/register`,
+                `${API_BASE_URL}/register`,
                 {
                     method: "POST",
                     headers: {
