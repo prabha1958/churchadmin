@@ -183,7 +183,7 @@ export default function ChurchRegistrationPage() {
 
         try {
             const response = await fetch(
-                `${API_BASE_URL}/register`,
+                `${API_BASE_URL}/platform/register`,
                 {
                     method: "POST",
                     headers: {
