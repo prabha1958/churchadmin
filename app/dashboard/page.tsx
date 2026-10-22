@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Sidebar from "@/components/sidebar";
-import { useAuth } from "@/context/auth-provider";
+import Sidebar from "../components/sidebar";
+import { useAuth } from "../context/auth-provider";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { token, member, churchCode, loading, isAdmin } = useAuth();
