@@ -1,76 +1,56 @@
-"use client"
+"use client";
 
-import Link from 'next/link'
-import { useAuth } from '../context/auth-provider'
-import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { Menu, X, LogOut, LayoutDashboard, MessageSquare, Users, ClipboardList, CreditCard, HeartHandshake, Church, CalendarDays, HandHeart, UsersRound } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "../context/auth-provider";
 
-import {
-    Avatar,
-    AvatarImage,
-    AvatarFallback,
-} from "@/components/ui/avatar";
+const links = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
+  { href: "/dashboard/members", label: "Members", icon: Users },
+  { href: "/dashboard/changes", label: "Change Requests", icon: ClipboardList },
+  { href: "/dashboard/subscriptions", label: "Subscriptions", icon: CreditCard },
+  { href: "/dashboard/alliances", label: "Alliances", icon: HeartHandshake },
+  { href: "/dashboard/clergy", label: "Clergy", icon: Church },
+  { href: "/dashboard/committee", label: "Committee Members", icon: UsersRound },
+  { href: "/dashboard/events", label: "Events", icon: CalendarDays },
+  { href: "/dashboard/poor-feeding", label: "Poor Feeding", icon: HandHeart },
+  { href: "/dashboard/men-fellowships", label: "Mens Fellowships", icon: UsersRound },
+  { href: "/dashboard/women-fellowship", label: "Womens Fellowships", icon: UsersRound },
+];
 
+export default function Sidebar() {
+  const { member, churchCode, logout } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const initials = `${member?.first_name?.trim()?.[0] || ""}${member?.last_name?.trim()?.[0] || ""}`.toUpperCase() || "AD";
+  const imageUrl = member?.profile_photo ? `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ""}/storage/${member.profile_photo}` : "/no-photo.png";
 
-function Sidebar() {
-    const { member, logout } = useAuth()
-    const profile_url = process.env.NEXT_PUBLIC_URL
-    const router = useRouter();
-    const pathname = usePathname();
+  const handleLogout = async () => { setOpen(false); await logout(); router.replace("/"); };
+  const navContent = (
+    <div className="flex h-full flex-col bg-[#191970] text-white">
+      <div className="flex items-center gap-3 border-b border-white/10 px-4 py-5">
+        <Avatar className="h-10 w-10 border border-white/30"><AvatarImage src={imageUrl} alt="Administrator profile" /><AvatarFallback className="bg-blue-100 font-semibold text-blue-950">{initials}</AvatarFallback></Avatar>
+        <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{[member?.first_name, member?.last_name].filter(Boolean).join(" ") || "Administrator"}</p><p className="text-xs capitalize text-blue-200">{member?.role || "Admin"}</p>{churchCode && <p className="mt-1 truncate text-[11px] text-amber-300">Church: {churchCode}</p>}</div>
+        <button type="button" className="rounded-md p-2 hover:bg-white/10 md:hidden" onClick={() => setOpen(false)} aria-label="Close navigation"><X className="h-5 w-5" /></button>
+      </div>
+      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+        {links.map(({ href, label, icon: Icon }) => {
+          const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+          return <Link key={href} href={href} onClick={() => setOpen(false)} className={`flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${active ? "bg-white text-[#191970] font-semibold" : "text-blue-50 hover:bg-white/10"}`}><Icon className="h-4 w-4 shrink-0" /><span>{label}</span></Link>;
+        })}
+      </nav>
+      <div className="border-t border-white/10 p-3"><button onClick={handleLogout} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-400"><LogOut className="h-4 w-4" />Sign out</button></div>
+    </div>
+  );
 
-    const initials = (firstName: string | null | undefined) => {
-        if (!firstName) return "NA";
-        const trimmed = firstName.trim();
-        if (!trimmed) return "NA";
-        return trimmed.slice(0, 2).toUpperCase();
-    };
-
-    const fileUrl = (path?: string | null) => {
-        if (!path) return "/no-photo.png";
-        return `${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}/storage/${path}`;
-    };
-
-    const handleLogoutClick = async () => {
-        await logout();
-        router.push("/");
-    };
-
-    return (
-
-        <div className='w-full px-2 h-full  flex flex-col items-center gap-3 bg-[#272757] '>
-            <div className='flex flex-col pt-5 pb-9'>
-                <Avatar className="h-8 w-8 border border-blue-500/70">
-                    <AvatarImage
-                        src={fileUrl(member?.profile_photo)}
-                        alt={`${member?.first_name || ""} ${member?.last_name || ""}`}
-                    />
-                    <AvatarFallback className="bg-blue-100 text-[10px] font-bold">
-                        {initials(member?.first_name)}
-                    </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col leading-tight">
-                    <span className="text-xs font-medium text-blue-100">
-                        {member?.first_name} {member?.last_name}
-                    </span>
-                    <span className="text-[10px] uppercase text-blue-300">
-                        {member?.role}
-                    </span>
-                </div>
-            </div>
-            <Link href="/dashboard" className=' text-2xl text-blue-50 justify-items-start'>Dashboard</Link>
-            <Link href="/dashboard/messages" className=' text-2xl text-blue-50 justify-items-start'>Messages</Link>
-            <Link href="/dashboard/members" className=' text-2xl text-blue-50 justify-items-start'>Members</Link>
-            <Link href="/dashboard/changes" className=' text-2xl text-blue-50 justify-items-start'>Change Requests</Link>
-            <Link href="/dashboard/subscriptions" className=' text-2xl text-blue-50'>Subscriptions</Link>
-            <Link href="/dashboard/alliances" className=' text-2xl text-blue-50'>Alliances</Link>
-            <Link href="/dashboard/clergy" className=' text-2xl text-blue-50'>Clergy</Link>
-            <Link href="/dashboard/committee" className=' text-2xl text-blue-50'>Committee Members</Link>
-            <Link href="/dashboard/events" className=' text-2xl text-blue-50'>Events</Link>
-            <Link href="/dashboard/poor-feeding" className=' text-2xl text-blue-50'>Poorfeeding</Link>
-            <Link href="/dashboard/men-fellowships" className=' text-2xl text-blue-50'>MensFellowships</Link>
-            <Link href="/dashboard/women-fellowship" className=' text-2xl text-blue-50'>WomensFellowships</Link>
-            <button onClick={handleLogoutClick} className="bg-amber-500 p-2 rounded-2xl text-blue-50 text-[20px] cursor-pointer mt-6">Logout</button>
-        </div>
-    )
+  return <>
+    <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between bg-[#191970] px-4 text-white shadow-md md:hidden"><button type="button" onClick={() => setOpen(true)} className="rounded-md p-2 hover:bg-white/10" aria-label="Open navigation"><Menu className="h-6 w-6" /></button><span className="truncate px-2 text-base font-semibold">Church Admin</span><span className="max-w-[35%] truncate text-xs text-amber-300">{churchCode || ""}</span></div>
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 shadow-xl md:block lg:w-72">{navContent}</aside>
+    {open && <div className="fixed inset-0 z-50 md:hidden"><button className="absolute inset-0 bg-black/60" aria-label="Close navigation overlay" onClick={() => setOpen(false)} /><aside className="absolute inset-y-0 left-0 w-[min(84vw,20rem)] shadow-2xl">{navContent}</aside></div>}
+  </>;
 }
-
-export default Sidebar

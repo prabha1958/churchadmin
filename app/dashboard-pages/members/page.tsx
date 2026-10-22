@@ -1,5 +1,7 @@
 "use client";
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 import { useEffect, useState, FormEvent } from "react";
 import Image from "next/image";
 import { useAuth } from "../../context/auth-provider";
@@ -123,7 +125,7 @@ export default function MembersPage() {
     const loadMembers = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members?search=${search}`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members?search=${search}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -193,7 +195,7 @@ export default function MembersPage() {
         });
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -263,7 +265,7 @@ export default function MembersPage() {
         fd.append("_method", "PATCH");
 
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${editForm.id}`,
                 {
                     method: "POST",
@@ -303,7 +305,7 @@ export default function MembersPage() {
 
         setSavingEmail(true);
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${selectedMember.id}/email`,
                 {
                     method: "PATCH",
@@ -345,7 +347,7 @@ export default function MembersPage() {
 
         setSavingMobile(true);
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${selectedMember.id}/mobile`,
                 {
                     method: "PATCH",
@@ -391,7 +393,7 @@ export default function MembersPage() {
         setIsDeactivating(true);
 
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${selectedMember.id}/deactivate`,
                 {
                     method: "DELETE",

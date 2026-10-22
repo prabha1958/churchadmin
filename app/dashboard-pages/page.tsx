@@ -1,5 +1,7 @@
 "use client"
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 
 // app/admin/dashboard/page.tsx
 import {
@@ -73,7 +75,7 @@ export default function AdminDashboard() {
 
         try {
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/dashboard`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/dashboard`, {
                 method: "GET",
                 headers: {
 
@@ -103,7 +105,7 @@ export default function AdminDashboard() {
         setRunningType("birthday");
 
         try {
-            await fetch(
+            await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/birthday/run`,
                 {
                     method: "POST",
@@ -129,7 +131,7 @@ export default function AdminDashboard() {
                         ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/birthday/logs`
                         : `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/anniversary/logs`;
 
-                const res = await fetch(url, {
+                const res = await tenantFetch(url, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         Accept: "application/json",
@@ -157,7 +159,7 @@ export default function AdminDashboard() {
 
     const fetchLogs = async () => {
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/birthday/logs`,
                 {
                     headers: {
@@ -182,7 +184,7 @@ export default function AdminDashboard() {
         setRunningType("anniversary");
 
         try {
-            await fetch(
+            await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/anniversary/run`,
                 {
                     method: "POST",
@@ -203,7 +205,7 @@ export default function AdminDashboard() {
 
     const fetchannLogs = async () => {
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/greetings/anniversary/logs`,
                 {
                     headers: {

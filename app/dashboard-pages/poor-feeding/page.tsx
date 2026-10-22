@@ -1,5 +1,7 @@
 "use client";
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 import { useEffect, useState, FormEvent } from "react";
 import Image from "next/image";
 import { useAuth } from "../../context/auth-provider";
@@ -95,7 +97,7 @@ export default function EventsPage() {
     const loadPfeedings = async () => {
         try {
             setLoading(true);
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings`,
                 {
                     headers: {
@@ -147,7 +149,7 @@ export default function EventsPage() {
 
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -244,7 +246,7 @@ export default function EventsPage() {
 
         try {
 
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings/${selectedPfeeding.id}`,
                 {
                     method: "POST", // Laravel will accept POST+_method=PUT
@@ -309,7 +311,7 @@ export default function EventsPage() {
         setSuccessMsg(null);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings/${id}/hide`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings/${id}/hide`, {
                 method: "PATCH",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -359,7 +361,7 @@ export default function EventsPage() {
         setSuccessMsg(null);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings/${id}/show`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings/${id}/show`, {
                 method: "PATCH",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -413,7 +415,7 @@ export default function EventsPage() {
 
 
     const removePhoto = async (path: string) => {
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/poor-feedings/${selectedPfeeding?.id}/photo`,
             {
                 method: "DELETE",

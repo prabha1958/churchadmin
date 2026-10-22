@@ -1,5 +1,7 @@
 "use client";
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -85,7 +87,7 @@ export default function SubscriptionsPage() {
         setMonths([]);
         setMonthlyFee(0);
 
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/subscriptions/${row.member_id}/due`,
             {
                 headers: {
@@ -139,7 +141,7 @@ export default function SubscriptionsPage() {
 
 
     const loadSubscriptions = async () => {
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/subscriptions?search=${search}`,
             {
                 headers: {
@@ -169,7 +171,7 @@ export default function SubscriptionsPage() {
         setIsPaying(true);
 
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/subscriptions/${payMember.member_id}/pay`,
                 {
                     method: "POST",
@@ -207,7 +209,7 @@ export default function SubscriptionsPage() {
 
 
                     // 🔥 CALL VERIFY PAYMENT API
-                    const verifyRes = await fetch(
+                    const verifyRes = await tenantFetch(
                         `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/subscriptions/verify-payment`,
                         {
                             method: "POST",
@@ -254,7 +256,7 @@ export default function SubscriptionsPage() {
 
 
     const handleViewSubscription = async (memberId: number) => {
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/subscriptions/${memberId}`,
             {
                 headers: {
@@ -280,7 +282,7 @@ export default function SubscriptionsPage() {
     const handleOfflinePay = async () => {
         if (!payMember) return;
         setIsCreating(true)
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/subscriptions/${payMember.member_id}/pay-offline`,
             {
                 method: "POST",

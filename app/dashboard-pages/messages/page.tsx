@@ -1,5 +1,7 @@
 'use client';
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 import { useEffect, useState, FormEvent } from "react";
 import Image from "next/image";
 import { useAuth } from "../../context/auth-provider";
@@ -97,7 +99,7 @@ export default function AdminMessagesPage() {
     const loadMessages = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages`, {
                 method: "GET",
                 headers: {
 
@@ -147,7 +149,7 @@ export default function AdminMessagesPage() {
         });
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -196,7 +198,7 @@ export default function AdminMessagesPage() {
         setSuccessMsg(null);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${id}/send`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${id}/send`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -254,7 +256,7 @@ export default function AdminMessagesPage() {
             formData.append("image_path", editForm.image_path);
         }
 
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${selectedMessage.id}/update`, {
+        await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${selectedMessage.id}/update`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -279,7 +281,7 @@ export default function AdminMessagesPage() {
         setSuccessMsg(null);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${id}/hide`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${id}/hide`, {
                 method: "PATCH",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -329,7 +331,7 @@ export default function AdminMessagesPage() {
         setSuccessMsg(null);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${id}/show`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/messages/${id}/show`, {
                 method: "PATCH",
                 headers: {
                     Authorization: `Bearer ${token}`,

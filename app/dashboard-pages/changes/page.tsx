@@ -1,5 +1,7 @@
 "use client";
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 import { useEffect, useState, FormEvent } from "react";
 import Image from "next/image";
 import { useAuth } from "../../context/auth-provider";
@@ -118,7 +120,7 @@ export default function PastrsPage() {
     const loadChanges = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/changes`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/changes`, {
                 method: "GET",
                 headers: {
 
@@ -144,7 +146,7 @@ export default function PastrsPage() {
     const openEdit = async (member_id: any, id: any) => {
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${member_id}`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${member_id}`, {
                 method: "GET",
                 headers: {
 
@@ -202,7 +204,7 @@ export default function PastrsPage() {
         fd.append("_method", "PATCH");
 
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${editForm.id}`,
                 {
                     method: "POST",
@@ -237,7 +239,7 @@ export default function PastrsPage() {
 
         try {
 
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/changes/${id}`,
                 {
                     method: "PATCH",
@@ -270,7 +272,7 @@ export default function PastrsPage() {
 
         setSavingEmail(true);
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${selectedMember.id}/email`,
                 {
                     method: "PATCH",
@@ -312,7 +314,7 @@ export default function PastrsPage() {
 
         setSavingMobile(true);
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/members/${selectedMember.id}/mobile`,
                 {
                     method: "PATCH",

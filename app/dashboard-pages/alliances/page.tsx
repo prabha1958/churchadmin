@@ -1,5 +1,7 @@
 "use client";
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 import { useEffect, useState, FormEvent } from "react";
 import Image from "next/image";
 import { useAuth } from "../../context/auth-provider";
@@ -206,7 +208,7 @@ export default function AlliancePage() {
     const loadAlliances = async () => {
         const query = search ? `?search=${encodeURIComponent(search)}` : "";
 
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances${query}`,
             {
                 headers: {
@@ -240,7 +242,7 @@ export default function AlliancePage() {
         }
 
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances`,
                 {
                     method: "POST",
@@ -308,7 +310,7 @@ export default function AlliancePage() {
         setViewAllianceOpen(true);
 
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances/${id}`,
                 {
                     headers: {
@@ -336,7 +338,7 @@ export default function AlliancePage() {
         setEditOpen(true);
         setEditLoading(true);
 
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances/${id}`,
             {
                 headers: {
@@ -436,7 +438,7 @@ export default function AlliancePage() {
         fd.append('_method', 'PATCH')
 
 
-        const res = await fetch(
+        const res = await tenantFetch(
 
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances/${editForm.id}`,
             {
@@ -468,7 +470,7 @@ export default function AlliancePage() {
     };
 
     const togglePublish = async (allianceId: number) => {
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances/${allianceId}/publish`,
             {
                 method: "POST", // spoof PATCH
@@ -496,7 +498,7 @@ export default function AlliancePage() {
 
         try {
             // 1️⃣ Create order
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances/${payAlliance.id}/payments/create-order`,
                 {
                     method: "POST",
@@ -541,7 +543,7 @@ export default function AlliancePage() {
         response: any,
         paymentId: number
     ) => {
-        const res = await fetch(
+        const res = await tenantFetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances/${payAlliance.id}/payments/verify`,
             {
                 method: "POST",
@@ -576,7 +578,7 @@ export default function AlliancePage() {
         setIsCreating(true)
 
         try {
-            const res = await fetch(
+            const res = await tenantFetch(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/alliances/${payAlliance.id}/payments/offline`,
                 {
                     method: "POST",

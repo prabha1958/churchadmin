@@ -1,5 +1,7 @@
 "use client";
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 import { useEffect, useState, FormEvent } from "react";
 import Image from "next/image";
 import { useAuth } from "../../context/auth-provider";
@@ -21,16 +23,16 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 
-interface Pastor {
+import { Spinner } from "@/components/ui/spinner"
+
+interface Announcement {
     id: number;
-    name: string;
-    designation: string;
-    qualifications: string;
-    date_of_joining: Date;
-    date_of_leaving: Date;
-    past_service_description: string;
-    photo: string;
-    order_no: number;
+    date: Date;
+    picture: string;
+    title: string;
+    description: string;
+    exp_date: Date;
+    published: boolean;
     created_at: Date;
     updated_at: Date;
 }
@@ -39,7 +41,7 @@ export default function PastrsPage() {
     const { token, isAdmin } = useAuth();
     const router = useRouter();
 
-    const [pastors, setPastors] = useState<Pastor[]>([]);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [viewModal, setViewModal] = useState(false);
@@ -52,12 +54,14 @@ export default function PastrsPage() {
         null
     );
 
-    const [selectedPastor, setSelectedPastor] = useState<Pastor | null>(null);
+    const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
     const [editProfilePreview, setEditProfilePreview] = useState<string | null>(
         null
     );
 
     const [editForm, setEditForm] = useState<any>({});
+
+
 
     const toDateInput = (value?: string | Date | null): string => {
         if (!value) return "";
@@ -71,19 +75,18 @@ export default function PastrsPage() {
         return value.split("T")[0];
     };
 
+
     useEffect(() => {
 
-        loadPastors();
+        loadAnnouncements();
 
     }, [token]);
 
 
-
-
-    const loadPastors = async () => {
+    const loadAnnouncements = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/pastors`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/announcements`, {
                 method: "GET",
                 headers: {
 
@@ -93,12 +96,12 @@ export default function PastrsPage() {
             });
 
             const json = await res.json();
-            console.log(json)
-            setPastors(Array.isArray(json.data?.data) ? json.data.data : []);
+
+            setAnnouncements(Array.isArray(json.data?.data) ? json.data.data : []);
 
 
         } catch {
-            alert("Unable to load pastors");
+            alert("Unable to load announcements");
         } finally {
             setLoading(false);
         }
@@ -132,8 +135,7 @@ export default function PastrsPage() {
         });
 
         try {
-
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/pastors`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/announcements`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -152,8 +154,8 @@ export default function PastrsPage() {
 
             if (res.ok) {
                 // success
-                setSuccessMsg("Member created successfully ✅");
-                loadPastors();
+                setSuccessMsg("Announcement created successfully ✅");
+                loadAnnouncements();
 
                 // auto close modal after short delay
                 setTimeout(() => {
@@ -172,21 +174,20 @@ export default function PastrsPage() {
 
 
 
-    const openEdit = (pastor: Pastor) => {
-        setSelectedPastor(pastor);
+    const openEdit = (ann: Announcement) => {
+        setSelectedAnnouncement(ann);
         setEditForm({
-            ...pastor,
-            date_of_joining: toDateInput(pastor.date_of_joining),
-            date_of_leaving: toDateInput(pastor.date_of_leaving),
+            ...ann,
+            date: toDateInput(ann.date),
+            exp_date: toDateInput(ann.exp_date),
         });
-        setEditProfilePreview(pastor.photo ? fileUrl(pastor.photo) : null);
+        setEditProfilePreview(ann.picture ? fileUrl(ann.picture) : null);
         setEditModal(true);
     };
 
-
     const handleEditSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!selectedPastor) return;
+        if (!selectedAnnouncement) return;
 
         setIsCreating(true);
         setSuccessMsg(null);
@@ -206,7 +207,7 @@ export default function PastrsPage() {
 
             // ❌ 2. DO NOT send existing image paths
             if (
-                key === "photo"
+                key === "picture"
 
             ) {
                 return;
@@ -215,14 +216,13 @@ export default function PastrsPage() {
             // ✅ 3. Normal scalar values
             formData.append(key, String(val));
         });
-
         formData.append('_method', 'PATCH')
 
 
 
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/pastors/${selectedPastor.id}`,
+            const res = await tenantFetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/announcements/${selectedAnnouncement.id}`,
                 {
                     method: "POST", // Laravel will accept POST+_method=PUT
                     headers: {
@@ -234,10 +234,10 @@ export default function PastrsPage() {
             );
 
             const data = await res.json();
-            console.log(data)
+
 
             if (!res.ok) {
-                alert(data.message || "Failed to create member");
+                alert(data.message || "Failed to create announcement");
                 setIsCreating(false);
                 return;
             }
@@ -245,7 +245,7 @@ export default function PastrsPage() {
             if (res.ok) {
                 // success
                 setSuccessMsg("Member has been edited successfully ✅");
-                loadPastors();
+                loadAnnouncements();
 
                 // auto close modal after short delay
                 setTimeout(() => {
@@ -254,6 +254,56 @@ export default function PastrsPage() {
                 }, 1500);
             } else {
                 alert(data.message || "Error creating member");
+            }
+        } catch (err) {
+            alert("Network error");
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+
+
+    const handlSendSubmit = async (id: any) => {
+
+        const confirmed = window.confirm(
+            "Are you sure you want to publish this message?\nThis will notify members."
+        );
+
+        if (!confirmed) return;
+        setIsCreating(true);
+        setSuccessMsg(null);
+
+        try {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/announcements/${id}/send`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.message || "Failed to update message");
+                setIsCreating(false);
+                return;
+            }
+
+            if (res.ok) {
+                // success
+                setSuccessMsg("Message updated successfully ✅");
+                loadAnnouncements();
+
+                // auto close modal after short delay
+                setTimeout(() => {
+                    setAddModal(false);
+                    setSuccessMsg(null);
+                }, 1500);
+            } else {
+                alert(data.message || "Error updating member");
             }
         } catch (err) {
             alert("Network error");
@@ -273,47 +323,62 @@ export default function PastrsPage() {
     return (
         <div className="p-6 bg-base-100">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-xl font-bold">Pastors</h1>
-                <Button onClick={openAdd} >+ Add Pastor</Button>
+                <h1 className="text-xl font-bold">Announcements</h1>
+                <Button onClick={openAdd} >+ Add Announcement</Button>
             </div>
             <table className="table table-zebra w-full  text-center">
                 <thead className="bg-[#272757] text-blue-50 px-2 ">
                     <tr >
                         <th >Photo</th>
-                        <th >Name</th>
-                        <th>Designation</th>
-                        <th>Qualifications</th>
-                        <th>Dt. of Joining</th>
-                        <th>Dt.of Leaving</th>
-                        <th>About</th>
-                        <th>order no</th>
-                        <th className="text-right">Actions</th>
+                        <th >Date</th>
+                        <th>Description</th>
+                        <th>Exp_date</th>
+                        <th>Published</th>
+
+                        <th colSpan={2} className="text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {pastors?.map((pastor) => (
-                        <tr key={pastor.id} className="odd:bg-blue-200 even:bg-blue-50">
+                <tbody className="text-blue-950">
+                    {announcements?.map((ann) => (
+                        <tr key={ann.id} className="odd:bg-blue-200 even:bg-blue-50">
                             <td>
-                                <Image
-                                    src={fileUrl(pastor.photo)}
-                                    alt="avatar"
-                                    width={20}
-                                    height={20}
-                                    className="w-10 h-10 rounded-full"
+                                {ann.picture && (
+                                    <Image
+                                        src={fileUrl(ann.picture)}
+                                        alt="avatar"
+                                        width={20}
+                                        height={20}
+                                        className="w-10 h-10 rounded-full"
 
-                                />
+                                    />
+                                )}
+
                             </td>
-                            <td className="pl-2">{pastor.name}</td>
-                            <td className="pl-2">{pastor.designation}</td>
-                            <td>{pastor.qualifications}</td>
-                            <td>{format(pastor.date_of_joining, "dd-MM-yyyy")}</td>
-                            <td>{pastor.date_of_leaving && format(pastor.date_of_leaving, "dd-MM-yyyy")}</td>
-                            <td className="w-96"><Textarea value={pastor.past_service_description} readOnly /></td>
-                            <td>{pastor.order_no}</td>
+                            <td className="pl-2">{format(ann.date, "dd-MM-yyyy")}</td>
+                            <td className="w-96"><Textarea value={ann.description} /> </td>
+                            <td className="pl-2">{format(ann.exp_date, "dd-MM-yyyy")}</td>
+                            <td>{ann.published ? "published" : "to approve"}</td>
                             <td>
-                                <Button size="sm" onClick={() => openEdit(pastor)} className="bg-amber-400 text-amber-950 font-bold my-1">
+                                <Button size="sm" onClick={() => openEdit(ann)} className="bg-amber-400 text-amber-950 font-bold my-1">
                                     Edit
                                 </Button>
+                            </td>
+
+                            <td>
+                                {isCreating &&
+                                    <Button type="submit" size="sm" className="bg-green-400 text-amber-950 font-bold my-1 ml-1">
+                                        <Spinner /> updating
+                                    </Button>
+                                }
+                                {!isCreating && !ann.published &&
+                                    <Button type="submit" onClick={() => handlSendSubmit(ann.id)} size="sm" className="bg-green-400 text-amber-950 font-bold my-1 ml-1">
+                                        Send
+                                    </Button>
+                                }
+
+                                {!isCreating && ann.published &&
+                                    <p>Published</p>
+                                }
                             </td>
 
 
@@ -326,142 +391,108 @@ export default function PastrsPage() {
 
             {/* ------------------ ADD MODAL ------------------ */}
             <Dialog open={addModal} onOpenChange={setAddModal}>
-                <DialogContent
-                    className="
-                            w-[95vw]
-                            max-w-6xl
-                            bg-slate-900
-                            text-white
-                            border-slate-700
-                            p-0
-    "
-                >
-
-                    <form onSubmit={handleAddSubmit} className="relative">
-                        {/* BLUR + LOADING OVERLAY */}
-                        {isCreating && (
-                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                                <div className="text-center">
-                                    <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
-                                    <p className="text-sm">Creating member…</p>
+                <DialogContent className="w-[95vw] bg-slate-900 text-white border-slate-700 px-2">
+                    <DialogHeader>
+                        <DialogTitle>Add Announcement</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-4">
+                        <form onSubmit={handleAddSubmit} className="space-y-4">
+                            {/* BLUR + LOADING OVERLAY */}
+                            {isCreating && (
+                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                                    <div className="text-center">
+                                        <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
+                                        <p className="text-sm">Creating Announcement…</p>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* SUCCESS MESSAGE */}
-                        {successMsg && (
-                            <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
-                                {successMsg}
-                            </div>
-                        )}
-                        {/* HEADER */}
-                        <div className="px-6 py-4 border-b border-slate-700">
-                            <DialogTitle>Add Pastor </DialogTitle>
-                        </div>
-                        <div className="max-h-[65vh] overflow-y-auto px-6 py-4 space-y-6">
-                            <div className="flex flex-col items-center space-y-4">
-                                <div className="flex flex-col items-center mx-auto">
-                                    {addProfilePreview && (
-                                        <Image
-                                            src={addProfilePreview}
-                                            width={100}
-                                            height={100}
-                                            className="rounded"
-                                            alt="preview"
-                                        />
-                                    )}
-                                    <Label>Profile picture</Label>
-                                    <Input
-                                        type="file"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (!file) return;
-                                            setAddForm({ ...addForm, photo: file });
-                                            setAddProfilePreview(URL.createObjectURL(file));
-                                        }}
-                                    />
+                            )}
+                            {/* SUCCESS MESSAGE */}
+                            {successMsg && (
+                                <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
+                                    {successMsg}
                                 </div>
+                            )}
+                            {/* Photo preview */}
+                            {addProfilePreview && (
+                                <Image
+                                    src={addProfilePreview}
+                                    width={100}
+                                    height={100}
+                                    className="rounded"
+                                    alt="preview"
+                                />
+                            )}
+                            <Label> Picture</Label>
 
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <label className="text-amber-400">Name</label>
+                            <Input
+                                type="file"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    setAddForm({ ...addForm, picture: file });
+                                    setAddProfilePreview(URL.createObjectURL(file));
+                                }}
+                            />
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <Label>Date of Announcement</Label>
                                     <Input
-                                        required
-                                        placeholder="Name *"
+                                        type="date"
 
-                                        onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-                                    />
-                                </div>
-
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label>Designation *</Label>
-                                    <Input
-                                        required
-                                        placeholder="Designation"
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, designation: e.target.value })
+                                            setAddForm({ ...addForm, date: e.target.value })
                                         }
                                     />
                                 </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label>Qualifications *</Label>
+                                <div>
+                                    <Label>Title*</Label>
                                     <Input
                                         required
-                                        placeholder="Qualifications"
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, qualifications: e.target.value })
+                                            setAddForm({ ...addForm, title: e.target.value })
                                         }
                                     />
                                 </div>
-                                <div className="flex flex-col  space-y-0.5 w-full">
-                                    <Label>About </Label>
+                                <div>
+                                    <Label>Description *</Label>
                                     <Textarea
-                                        placeholder="About the pastor"
+
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, past_service_description: e.target.value })
+                                            setAddForm({ ...addForm, description: e.target.value })
                                         }
                                     >
 
                                     </Textarea>
-
                                 </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label>Date of Joining</Label>
+                                <div>
+                                    <Label>Expiry Date *</Label>
                                     <Input
                                         type="date"
 
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, date_of_joining: e.target.value })
+                                            setAddForm({ ...addForm, exp_date: e.target.value })
                                         }
                                     />
                                 </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label>Date of Leaving</Label>
-                                    <Input
-                                        type="date"
-
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, date_of_leaving: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label>Order No</Label>
+                                <div>
+                                    <Label>Published</Label>
                                     <Input
                                         type="number"
 
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, order_no: e.target.value })
+                                            setAddForm({ ...addForm, published: e.target.value })
                                         }
                                     />
                                 </div>
 
                             </div>
-                        </div>
-                        <button type="submit" className="w-full  p-2 bg-green-900 text-amber-50">
-                            Create Pastor
-                        </button>
-                    </form>
+                            <Button type="submit" className="bg-blue-600 text-blue-50">
+                                Create Announcement
+                            </Button>
+                        </form>
+                    </div>
                 </DialogContent>
+
             </Dialog>
             {/* ------------------ EDIT MODAL ------------------ */}
             <Dialog open={editModal} onOpenChange={setEditModal}>
@@ -482,7 +513,7 @@ export default function PastrsPage() {
                             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                                 <div className="text-center">
                                     <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
-                                    <p className="text-sm">Creating member…</p>
+                                    <p className="text-sm">Updating announcement…</p>
                                 </div>
                             </div>
                         )}
@@ -495,7 +526,7 @@ export default function PastrsPage() {
                         )}
                         {/* HEADER */}
                         <div className="px-6 py-4 border-b border-slate-700">
-                            <DialogTitle>Edit Pastor </DialogTitle>
+                            <DialogTitle>Edit Announcement </DialogTitle>
                         </div>
                         <div className="max-h-[65vh] overflow-y-auto px-6 py-4 space-y-6">
                             <div className="flex flex-col items-center space-y-4">
@@ -505,7 +536,7 @@ export default function PastrsPage() {
                                         <img
                                             src={
                                                 editProfilePreview ||
-                                                fileUrl(editForm.photo as string)
+                                                fileUrl(editForm.picture as string)
                                             }
                                             className="w-40 h-40 object-cover rounded-2xl mb-2"
                                             alt="profile"
@@ -517,83 +548,60 @@ export default function PastrsPage() {
                                         onChange={(e) => {
                                             const file = e.target.files?.[0];
                                             if (!file) return;
-                                            setEditForm({ ...editForm, photo: file });
+                                            setEditForm({ ...editForm, picture: file });
                                             setEditProfilePreview(URL.createObjectURL(file));
                                         }}
                                     />
                                 </div>
 
                                 <div className="flex flex-col space-y-0.5 w-full">
-                                    <label className="text-amber-400">Name</label>
+                                    <Label className="text-amber-400 ">Date of Announcement*</Label>
                                     <Input
-                                        placeholder="Name *"
-                                        value={editForm.name || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+
+                                        value={editForm.date}
+                                        onChange={(e) =>
+                                            setEditForm({ ...editForm, date: e.target.value })
+                                        }
                                     />
                                 </div>
                                 <div className="flex flex-col space-y-0.5 w-full">
-                                    <label className="text-amber-400">Designation</label>
+                                    <label className="text-amber-400">Title</label>
                                     <Input
-                                        placeholder="Designation"
-                                        value={editForm.designation || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, designation: e.target.value })}
+                                        placeholder="Title"
+                                        value={editForm.title || ""}
+                                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                                     />
                                 </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <label className="text-amber-400">Qualifications</label>
-                                    <Input
-                                        placeholder="Qualifications"
-                                        value={editForm.qualifications || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, qualifications: e.target.value })}
-                                    />
-                                </div>
+
                                 <div className="flex flex-col  space-y-0.5 w-full">
-                                    <label className="text-amber-400">About pastor</label>
+                                    <label className="text-amber-400">Description</label>
 
                                     <Textarea
-                                        placeholder="About pasto"
-                                        value={editForm.past_service_description || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, past_service_description: e.target.value })}
+                                        placeholder="Description of announcement"
+                                        value={editForm.description || ""}
+                                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                                     >
 
                                     </Textarea>
 
                                 </div>
                                 <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label className="text-amber-400 ">Date of Joining*<p>{editForm.date_of_joining}</p></Label>
+                                    <Label className="text-amber-400 ">Date of expiry*</Label>
                                     <Input
-                                        type="date"
-                                        value={editForm.date_of_joining}
+
+                                        value={editForm.exp_date}
                                         onChange={(e) =>
-                                            setEditForm({ ...editForm, date_of_joining: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label className="text-amber-400 w-full">Date of Leaving*<p>{editForm.date_of_leaving}</p></Label>
-                                    <Input
-                                        type="date"
-                                        value={editForm.date_of_leaving}
-                                        onChange={(e) =>
-                                            setEditForm({ ...editForm, date_of_leaving: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label className="text-amber-400 w-full">Order No</Label>
-                                    <Input
-                                        type="number"
-                                        value={editForm.order_no}
-                                        onChange={(e) =>
-                                            setEditForm({ ...editForm, order_no: e.target.value })
+                                            setEditForm({ ...editForm, exp_date: e.target.value })
                                         }
                                     />
                                 </div>
 
+
+
                             </div>
                         </div>
                         <button type="submit" className="w-full  p-2 bg-amber-900 text-amber-50">
-                            Update Pastor
+                            Update Announcement
                         </button>
                     </form>
                 </DialogContent>

@@ -1,5 +1,7 @@
 "use client";
 
+import { tenantFetch } from "@/lib/tenant-fetch";
+
 import { useEffect, useState, FormEvent } from "react";
 import Image from "next/image";
 import { useAuth } from "../../context/auth-provider";
@@ -21,28 +23,25 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 
-interface PastorateComMember {
+interface Pastor {
     id: number;
-    family_name: string;
-    first_name: string;
-    last_name: string;
-    date_of_birth: string;
-    dt_from: string;
-    dt_to: string;
-    status: "in" | "out";
+    name: string;
     designation: string;
-    profile_photo: string;
-    achievements: string;
+    qualifications: string;
+    date_of_joining: Date;
+    date_of_leaving: Date;
+    past_service_description: string;
+    photo: string;
+    order_no: number;
     created_at: Date;
     updated_at: Date;
-
 }
 
 export default function PastrsPage() {
     const { token, isAdmin } = useAuth();
     const router = useRouter();
 
-    const [pcmembers, setPcmembers] = useState<PastorateComMember[]>([]);
+    const [pastors, setPastors] = useState<Pastor[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [viewModal, setViewModal] = useState(false);
@@ -55,7 +54,7 @@ export default function PastrsPage() {
         null
     );
 
-    const [selectedComMember, setSelectedComMember] = useState<PastorateComMember | null>(null);
+    const [selectedPastor, setSelectedPastor] = useState<Pastor | null>(null);
     const [editProfilePreview, setEditProfilePreview] = useState<string | null>(
         null
     );
@@ -76,17 +75,17 @@ export default function PastrsPage() {
 
     useEffect(() => {
 
-        loadPcmembers();
+        loadPastors();
 
     }, [token]);
 
 
 
 
-    const loadPcmembers = async () => {
+    const loadPastors = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/commembers`, {
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/pastors`, {
                 method: "GET",
                 headers: {
 
@@ -96,12 +95,12 @@ export default function PastrsPage() {
             });
 
             const json = await res.json();
+            console.log(json)
+            setPastors(Array.isArray(json.data?.data) ? json.data.data : []);
 
-            setPcmembers(Array.isArray(json.data) ? json.data : []);
-            console.log(pcmembers)
 
         } catch {
-            alert("Unable to load pcmembers");
+            alert("Unable to load pastors");
         } finally {
             setLoading(false);
         }
@@ -135,7 +134,8 @@ export default function PastrsPage() {
         });
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/commembers`, {
+
+            const res = await tenantFetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/pastors`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -155,7 +155,7 @@ export default function PastrsPage() {
             if (res.ok) {
                 // success
                 setSuccessMsg("Member created successfully ✅");
-                loadPcmembers();
+                loadPastors();
 
                 // auto close modal after short delay
                 setTimeout(() => {
@@ -174,27 +174,27 @@ export default function PastrsPage() {
 
 
 
-    const openEdit = (pcm: PastorateComMember) => {
-        setSelectedComMember(pcm);
+    const openEdit = (pastor: Pastor) => {
+        setSelectedPastor(pastor);
         setEditForm({
-            ...pcm,
-            dt_from: toDateInput(pcm.dt_from),
-            dt_to: toDateInput(pcm.dt_to),
-            date_of_birth: toDateInput(pcm.date_of_birth)
+            ...pastor,
+            date_of_joining: toDateInput(pastor.date_of_joining),
+            date_of_leaving: toDateInput(pastor.date_of_leaving),
         });
-        setEditProfilePreview(pcm.profile_photo ? fileUrl(pcm.profile_photo) : null);
+        setEditProfilePreview(pastor.photo ? fileUrl(pastor.photo) : null);
         setEditModal(true);
     };
 
 
     const handleEditSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!selectedComMember) return;
+        if (!selectedPastor) return;
 
         setIsCreating(true);
         setSuccessMsg(null);
 
         const formData = new FormData();
+
 
 
         Object.entries(editForm).forEach(([key, val]) => {
@@ -208,7 +208,7 @@ export default function PastrsPage() {
 
             // ❌ 2. DO NOT send existing image paths
             if (
-                key === "profile_photo"
+                key === "photo"
 
             ) {
                 return;
@@ -223,8 +223,8 @@ export default function PastrsPage() {
 
 
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/commembers/${selectedComMember.id}`,
+            const res = await tenantFetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/pastors/${selectedPastor.id}`,
                 {
                     method: "POST", // Laravel will accept POST+_method=PUT
                     headers: {
@@ -236,7 +236,7 @@ export default function PastrsPage() {
             );
 
             const data = await res.json();
-
+            console.log(data)
 
             if (!res.ok) {
                 alert(data.message || "Failed to create member");
@@ -247,7 +247,7 @@ export default function PastrsPage() {
             if (res.ok) {
                 // success
                 setSuccessMsg("Member has been edited successfully ✅");
-                loadPcmembers();
+                loadPastors();
 
                 // auto close modal after short delay
                 setTimeout(() => {
@@ -275,30 +275,29 @@ export default function PastrsPage() {
     return (
         <div className="p-6 bg-base-100">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-xl font-bold">Pastorate Commitee Members</h1>
-                <Button onClick={openAdd} >+ Add PC Member</Button>
+                <h1 className="text-xl font-bold">Pastors</h1>
+                <Button onClick={openAdd} >+ Add Pastor</Button>
             </div>
             <table className="table table-zebra w-full  text-center">
                 <thead className="bg-[#272757] text-blue-50 px-2 ">
                     <tr >
                         <th >Photo</th>
-                        <th >Familly Name</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Date of Birth</th>
+                        <th >Name</th>
+                        <th>Designation</th>
+                        <th>Qualifications</th>
                         <th>Dt. of Joining</th>
                         <th>Dt.of Leaving</th>
-                        <th>Designation</th>
-                        <th>Status</th>
+                        <th>About</th>
+                        <th>order no</th>
                         <th className="text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {pcmembers?.map((pcm) => (
-                        <tr key={pcm.id} className="odd:bg-blue-200 even:bg-blue-50">
+                    {pastors?.map((pastor) => (
+                        <tr key={pastor.id} className="odd:bg-blue-200 even:bg-blue-50">
                             <td>
                                 <Image
-                                    src={fileUrl(pcm.profile_photo)}
+                                    src={fileUrl(pastor.photo)}
                                     alt="avatar"
                                     width={20}
                                     height={20}
@@ -306,16 +305,15 @@ export default function PastrsPage() {
 
                                 />
                             </td>
-                            <td className="pl-2">{pcm.family_name}</td>
-                            <td className="pl-2">{pcm.first_name}</td>
-                            <td className="pl-2">{pcm.last_name}</td>
-                            <td className="pl-2">{format(pcm.date_of_birth, "dd-MM-yyyy")}</td>
-                            <td className="pl-2">{format(pcm.dt_from, "dd-MM-yyyy")}</td>
-                            <td className="pl-2">{format(pcm.dt_to, "dd-MM-yyyy")}</td>
-                            <td>{pcm.designation}</td>
-                            <td>{pcm.status}</td>
+                            <td className="pl-2">{pastor.name}</td>
+                            <td className="pl-2">{pastor.designation}</td>
+                            <td>{pastor.qualifications}</td>
+                            <td>{format(pastor.date_of_joining, "dd-MM-yyyy")}</td>
+                            <td>{pastor.date_of_leaving && format(pastor.date_of_leaving, "dd-MM-yyyy")}</td>
+                            <td className="w-96"><Textarea value={pastor.past_service_description} readOnly /></td>
+                            <td>{pastor.order_no}</td>
                             <td>
-                                <Button size="sm" onClick={() => openEdit(pcm)} className="bg-amber-400 text-amber-950 font-bold my-1">
+                                <Button size="sm" onClick={() => openEdit(pastor)} className="bg-amber-400 text-amber-950 font-bold my-1">
                                     Edit
                                 </Button>
                             </td>
@@ -341,16 +339,17 @@ export default function PastrsPage() {
     "
                 >
 
-                    <form onSubmit={handleAddSubmit} className="space-y-4">
+                    <form onSubmit={handleAddSubmit} className="relative">
                         {/* BLUR + LOADING OVERLAY */}
                         {isCreating && (
                             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                                 <div className="text-center">
                                     <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
-                                    <p className="text-sm">Creating PC member…</p>
+                                    <p className="text-sm">Creating member…</p>
                                 </div>
                             </div>
                         )}
+
                         {/* SUCCESS MESSAGE */}
                         {successMsg && (
                             <div className="bg-green-600/20 border border-green-500 text-green-300 px-4 py-2 text-sm">
@@ -359,123 +358,110 @@ export default function PastrsPage() {
                         )}
                         {/* HEADER */}
                         <div className="px-6 py-4 border-b border-slate-700">
-                            <DialogTitle>Edit Pastorate Committee Member </DialogTitle>
+                            <DialogTitle>Add Pastor </DialogTitle>
                         </div>
                         <div className="max-h-[65vh] overflow-y-auto px-6 py-4 space-y-6">
-                            {/* Photo preview */}
-                            {addProfilePreview && (
-                                <Image
-                                    src={addProfilePreview}
-                                    width={100}
-                                    height={100}
-                                    className="rounded"
-                                    alt="preview"
-                                />
-                            )}
-                            <Label>Profile picture</Label>
-                            <Input
-                                type="file"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    setAddForm({ ...addForm, profile_photo: file });
-                                    setAddProfilePreview(URL.createObjectURL(file));
-                                }}
-                            />
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <Label>Family Name *</Label>
+                            <div className="flex flex-col items-center space-y-4">
+                                <div className="flex flex-col items-center mx-auto">
+                                    {addProfilePreview && (
+                                        <Image
+                                            src={addProfilePreview}
+                                            width={100}
+                                            height={100}
+                                            className="rounded"
+                                            alt="preview"
+                                        />
+                                    )}
+                                    <Label>Profile picture</Label>
                                     <Input
-                                        required
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, family_name: e.target.value })
-                                        }
+                                        type="file"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            setAddForm({ ...addForm, photo: file });
+                                            setAddProfilePreview(URL.createObjectURL(file));
+                                        }}
                                     />
                                 </div>
-                                <div>
-                                    <Label>First Name *</Label>
-                                    <Input
-                                        required
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, first_name: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Last Name *</Label>
-                                    <Input
-                                        required
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, last_name: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Date of Birth</Label>
-                                    <Input
-                                        type="date"
 
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <label className="text-amber-400">Name</label>
+                                    <Input
+                                        required
+                                        placeholder="Name *"
+
+                                        onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <Label>Designation *</Label>
+                                    <Input
+                                        required
+                                        placeholder="Designation"
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, date_of_birth: e.target.value })
+                                            setAddForm({ ...addForm, designation: e.target.value })
                                         }
                                     />
                                 </div>
-                                <div>
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <Label>Qualifications *</Label>
+                                    <Input
+                                        required
+                                        placeholder="Qualifications"
+                                        onChange={(e) =>
+                                            setAddForm({ ...addForm, qualifications: e.target.value })
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col  space-y-0.5 w-full">
+                                    <Label>About </Label>
+                                    <Textarea
+                                        placeholder="About the pastor"
+                                        onChange={(e) =>
+                                            setAddForm({ ...addForm, past_service_description: e.target.value })
+                                        }
+                                    >
+
+                                    </Textarea>
+
+                                </div>
+                                <div className="flex flex-col space-y-0.5 w-full">
                                     <Label>Date of Joining</Label>
                                     <Input
                                         type="date"
 
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, dt_from: e.target.value })
+                                            setAddForm({ ...addForm, date_of_joining: e.target.value })
                                         }
                                     />
                                 </div>
-                                <div>
+                                <div className="flex flex-col space-y-0.5 w-full">
                                     <Label>Date of Leaving</Label>
                                     <Input
                                         type="date"
 
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, dt_to: e.target.value })
+                                            setAddForm({ ...addForm, date_of_leaving: e.target.value })
                                         }
                                     />
                                 </div>
-                                <div>
-                                    <Label>Designation *</Label>
-                                    <select
-                                        required
-                                        onChange={(e) =>
-                                            setAddForm({ ...addForm, designation: e.target.value })
-                                        }
-                                    >
-                                        <option value="">--select desgn--</option>
-                                        <option value="secretary">Secretary</option>
-                                        <option value="treasurer">Treasurer</option>
-                                        <option value="steward">Steward</option>
-                                        <option value="prop-secretary">Property Secretary</option>
-
-                                    </select>
-
-
-
-                                </div>
-                                <div>
-                                    <Label>About the PC Member</Label>
-                                    <Textarea
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <Label>Order No</Label>
+                                    <Input
+                                        type="number"
 
                                         onChange={(e) =>
-                                            setAddForm({ ...addForm, achievements: e.target.value })
+                                            setAddForm({ ...addForm, order_no: e.target.value })
                                         }
-                                    >
-                                    </Textarea>
+                                    />
                                 </div>
-
 
                             </div>
-                            <Button type="submit" className="bg-blue-600 text-blue-50">
-                                Create Pastorate Comm Member
-                            </Button>
                         </div>
+                        <button type="submit" className="w-full  p-2 bg-green-900 text-amber-50">
+                            Create Pastor
+                        </button>
                     </form>
                 </DialogContent>
             </Dialog>
@@ -498,7 +484,7 @@ export default function PastrsPage() {
                             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                                 <div className="text-center">
                                     <div className="animate-spin h-8 w-8 rounded-full border-2 border-white border-t-transparent mx-auto mb-3" />
-                                    <p className="text-sm">Updating pc member…</p>
+                                    <p className="text-sm">Creating member…</p>
                                 </div>
                             </div>
                         )}
@@ -511,7 +497,7 @@ export default function PastrsPage() {
                         )}
                         {/* HEADER */}
                         <div className="px-6 py-4 border-b border-slate-700">
-                            <DialogTitle>Edit Pastorate Committee Member </DialogTitle>
+                            <DialogTitle>Edit Pastor </DialogTitle>
                         </div>
                         <div className="max-h-[65vh] overflow-y-auto px-6 py-4 space-y-6">
                             <div className="flex flex-col items-center space-y-4">
@@ -521,7 +507,7 @@ export default function PastrsPage() {
                                         <img
                                             src={
                                                 editProfilePreview ||
-                                                fileUrl(editForm.profile_photo as string)
+                                                fileUrl(editForm.photo as string)
                                             }
                                             className="w-40 h-40 object-cover rounded-2xl mb-2"
                                             alt="profile"
@@ -533,64 +519,18 @@ export default function PastrsPage() {
                                         onChange={(e) => {
                                             const file = e.target.files?.[0];
                                             if (!file) return;
-                                            setEditForm({ ...editForm, profile_photo: file });
+                                            setEditForm({ ...editForm, photo: file });
                                             setEditProfilePreview(URL.createObjectURL(file));
                                         }}
                                     />
                                 </div>
 
                                 <div className="flex flex-col space-y-0.5 w-full">
-                                    <label className="text-amber-400">Family Name</label>
+                                    <label className="text-amber-400">Name</label>
                                     <Input
                                         placeholder="Name *"
-                                        value={editForm.family_name || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, family_name: e.target.value })}
-                                    />
-                                </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <label className="text-amber-400">First Name</label>
-                                    <Input
-                                        placeholder="Name *"
-                                        value={editForm.first_name || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })}
-                                    />
-                                </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <label className="text-amber-400">Last Name</label>
-                                    <Input
-                                        placeholder="Name *"
-                                        value={editForm.last_name || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, last_name: e.target.value })}
-                                    />
-                                </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label className="text-amber-400 ">Date of Birth*<p>{editForm.date_of_joining}</p></Label>
-                                    <Input
-                                        type="date"
-                                        value={editForm.date_of_birth}
-                                        onChange={(e) =>
-                                            setEditForm({ ...editForm, date_of_birth: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label className="text-amber-400 ">Date of Joining*<p>{editForm.date_of_joining}</p></Label>
-                                    <Input
-                                        type="date"
-                                        value={editForm.dt_from}
-                                        onChange={(e) =>
-                                            setEditForm({ ...editForm, dt_from: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col space-y-0.5 w-full">
-                                    <Label className="text-amber-400 ">Date of leaving*<p>{editForm.date_of_joining}</p></Label>
-                                    <Input
-                                        type="date"
-                                        value={editForm.dt_to}
-                                        onChange={(e) =>
-                                            setEditForm({ ...editForm, dt_to: e.target.value })
-                                        }
+                                        value={editForm.name || ""}
+                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                                     />
                                 </div>
                                 <div className="flex flex-col space-y-0.5 w-full">
@@ -602,32 +542,55 @@ export default function PastrsPage() {
                                     />
                                 </div>
                                 <div className="flex flex-col space-y-0.5 w-full">
-                                    <label className="text-amber-400">Achievements</label>
+                                    <label className="text-amber-400">Qualifications</label>
                                     <Input
                                         placeholder="Qualifications"
-                                        value={editForm.achievements || ""}
-                                        onChange={(e) => setEditForm({ ...editForm, achievements: e.target.value })}
+                                        value={editForm.qualifications || ""}
+                                        onChange={(e) => setEditForm({ ...editForm, qualifications: e.target.value })}
                                     />
                                 </div>
-                                <div>
-                                    <Label>Status</Label>
-                                    <select
-                                        value={editForm.status}
-                                        onChange={(e) =>
-                                            setEditForm({ ...editForm, status: e.target.value })
-                                        }
+                                <div className="flex flex-col  space-y-0.5 w-full">
+                                    <label className="text-amber-400">About pastor</label>
+
+                                    <Textarea
+                                        placeholder="About pasto"
+                                        value={editForm.past_service_description || ""}
+                                        onChange={(e) => setEditForm({ ...editForm, past_service_description: e.target.value })}
                                     >
 
-                                        <option value="in">in</option>
-                                        <option value="out">out</option>
-
-
-                                    </select>
-
-
+                                    </Textarea>
 
                                 </div>
-
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <Label className="text-amber-400 ">Date of Joining*<p>{editForm.date_of_joining}</p></Label>
+                                    <Input
+                                        type="date"
+                                        value={editForm.date_of_joining}
+                                        onChange={(e) =>
+                                            setEditForm({ ...editForm, date_of_joining: e.target.value })
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <Label className="text-amber-400 w-full">Date of Leaving*<p>{editForm.date_of_leaving}</p></Label>
+                                    <Input
+                                        type="date"
+                                        value={editForm.date_of_leaving}
+                                        onChange={(e) =>
+                                            setEditForm({ ...editForm, date_of_leaving: e.target.value })
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col space-y-0.5 w-full">
+                                    <Label className="text-amber-400 w-full">Order No</Label>
+                                    <Input
+                                        type="number"
+                                        value={editForm.order_no}
+                                        onChange={(e) =>
+                                            setEditForm({ ...editForm, order_no: e.target.value })
+                                        }
+                                    />
+                                </div>
 
                             </div>
                         </div>
@@ -637,7 +600,6 @@ export default function PastrsPage() {
                     </form>
                 </DialogContent>
             </Dialog>
-
         </div>
     )
 }
